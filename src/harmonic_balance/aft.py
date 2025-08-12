@@ -1,19 +1,20 @@
 """Functions for alternating frequency/time method."""
 
 import numpy as np
+from scipy import sparse as sp
 
 
 def get_gamma(omega, n, NH, N):
-    return np.concat(
+    return sp.hstack(
         [_col(n, samples) for samples in _get_gamma_samples(omega, NH, N)],
-        axis=1,
+        format="csr",
     )
 
 
 def get_inv_gamma(omega, n, NH, N):
-    return np.concat(
+    return sp.vstack(
         [_row(n, samples) for samples in _get_inv_gamma_samples(omega, NH, N)],
-        axis=0,
+        format="csr",
     )
 
 
@@ -32,8 +33,8 @@ def _get_inv_gamma_samples(omega, NH, N):
 
 
 def _col(n, samples):
-    return np.kron(np.eye(n), samples.reshape(-1, 1))
+    return sp.kron(sp.eye(n), samples.reshape(-1, 1))
 
 
 def _row(n, samples):
-    return np.kron(np.eye(n), samples)
+    return sp.kron(sp.eye(n), samples)
