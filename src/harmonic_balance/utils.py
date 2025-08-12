@@ -13,7 +13,7 @@ def extract_dofs_freq(
     Parameters
     ----------
     coefficients
-        Should be of the form (a0, a1, ..., aNH) where ak denotes the
+        Should be of the form [a0, a1, ..., aNH] where ak denotes the
         coefficients of the kth harmonic for the n degrees of freedom.
     n
         Number of degrees of freedom
@@ -25,6 +25,26 @@ def extract_dofs_freq(
         shape (n, NH + 1)
     """
     return coefficients.reshape((n, -1), order="F")
+
+
+def extract_dofs_time(time: ndarray | sparray, n: int) -> ndarray | sparray:
+    """Reshape time signal by degree of freedom.
+
+    Parameters
+    ----------
+    time
+        Should be of the form [x0, x1, ..., x(n-1)] where xi denotes the
+        values of the ith degree of freedom for the N time points.
+    n
+        Number of degrees of freedom
+
+    Returns
+    -------
+    reshaped
+        Time signal where each row corresponds to a degree of freedom
+        shape (n, N)
+    """
+    return time.reshape((n, -1), order="C")
 
 
 def max_abs(
