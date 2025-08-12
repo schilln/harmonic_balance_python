@@ -96,6 +96,39 @@ def time_from_freq(n: int, gamma: sparray, freq: sparray) -> sparray:
     )
 
 
+def freq_from_time(inv_gamma: sparray, time: sparray) -> sparray:
+    """Compute a frequency signal from a time signal.
+
+    Parameters
+    ----------
+    n
+        Number of degrees of freedom
+    inv_gamma
+        Fourier transform operator (see `get_inv_gamma`)
+        shape (n * (NH + 1), n * N)
+    time
+        Time signal
+        shape (n * N,)
+
+        time = [x0, x1, ..., x_(n-1))]
+        xi = [x_i0, x_i1, ..., x_i(N-1)]
+        x_ij is the time signal for the jth sample (in the period) of the ith
+        degree of freedom
+
+    Returns
+    -------
+    freq
+        Frequency signal
+        shape (n * (NH + 1),)
+
+        freq = [a0, a1, ..., aNH]
+        ak = [a_k0, a_k1, ..., a_k(n-1)]
+        a_ki is the frequency coefficient for the kth harmonic of the ith degree
+        of freedom
+    """
+    return inv_gamma @ time
+
+
 def _get_tls(omega: float, N: int) -> ndarray:
     return 2 * np.pi * np.arange(N) / N / omega
 
