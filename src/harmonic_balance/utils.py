@@ -1,19 +1,111 @@
+"""
+
+Assume periodic functions of the form
+
+exp(1j * k * omega * t)
+
+and a time-domain system dynamics equation of the form
+
+Mx''(t) + Cx'(t) + Kx(t) + f_nl(x(t), x'(t)) = f(omega, t).
+
+Notation
+--------
+k
+    Frequency index
+omega
+    Fundamental frequency
+x
+    State in time domain
+z
+    State in frequency domain
+M
+    Mass matrix
+C
+    Damping matrix
+K
+    Stiffness matrix
+f_nl
+    Force function depending on state, potentially nonlinearly
+f
+    External force function
+NH
+    Assumed highest index of periodic basis functions / harmonics
+    [1, exp(1j * 1 * omega * t), ..., exp(1j * NH * omega * t)]
+n
+    Number of degrees of freedom in the system
+N
+    Number of points to sample when computing alternating frequency/time
+    Should have N >= 2 * NH + 1.
+A
+    Matrix describing linear dynamics in frequency domain
+"""
+
 from collections import abc
 
 import numpy as np
 import scipy
 
 ndarray = np.ndarray
+sparray = scipy.sparse.sparray
 
 
 FFT_NORM = "forward"
 
 
-def get_block(k: int, omega: float, M: ndarray, C: ndarray, K: ndarray):
+def get_block(
+    k: int, omega: float, M: ndarray, C: ndarray, K: ndarray
+) -> ndarray:
+    """Construct block for matrix defining linear dynamics in frequency domain.
+
+
+    Parameters
+    ----------
+    k
+        Frequency index / integer multiple of the fundamental frequency for
+        the block
+    omega
+        Fundamental frequency
+    M
+        Mass matrix
+        shape (n, n)
+    C
+        Damping matrix
+        shape (n, n)
+    K
+        Stiffness matrix
+        shape (n, n)
+
+    Returns
+    -------
+    block
+        kth diagonal block of frequency-domain linear dynamics matrix A
+        shape (n, n)
+    """
     return -k * omega**2 * M + 1j * k * omega * C + K
 
 
-def get_A(NH: int, omega: float, M: ndarray, C: ndarray, K: ndarray):
+def get_A(NH: int, omega: float, M: ndarray, C: ndarray, K: ndarray) -> sparray:
+    """Construct matrix defining linear dynamics in frequency domain.
+
+    Parameters
+    ----------
+    NH
+        Assumed highest harmonic index
+    omega
+        Fundamental frequency
+    M
+        Mass matrix
+    C
+        Damping matrix
+    K
+        Stiffness matrix
+
+    Returns
+    -------
+    A
+        Frequency-domain linear dynamics matrix
+        shape (n * (NH + 1), n * (NH + 1))
+    """
     return scipy.sparse.block_diag(
         [get_block(k, omega, M, C, K) for k in range(0, NH + 1)]
     ).tocsr()
@@ -26,7 +118,7 @@ def get_b_ext(
     dofs: abc.Iterable[int],
     is_cosines: abc.Iterable[bool],
     coefficients: abc.Iterable[float],
-):
+) -> sparray:
     """Return the exponential Fourier coefficients of the external force given
     cosine and sine coefficients.
 
@@ -36,18 +128,40 @@ def get_b_ext(
     Parameters
     ----------
     NH
-        The number of assumed harmonics, i.e., 0, 1, ..., N_H
+        Assumed highest harmonic index
     n
-        The number of degrees of freedom in the system
+        Number of degrees of freedom
     ks
         The harmonic indices corresponding to each coefficient in `coefficients`
     dofs
-        The degree of freedom indices corresponding to each coefficient in
+        Degree of freedom indices corresponding to each coefficient in
         `coefficients`
     is_cosines
         Whether each corresponding coefficient in `coefficients` is cosine
     coefficients
-        The coefficients of cosine and/or sine in the external force
+        Coefficients of cosine and/or sine in the external force (or constant
+        for k = 0)
+
+    Returns
+    -------
+    b_ext
+        Frequency coefficients of external force
+        shape (n * (NH + 1),)
+
+        b_ext = [c0, c1, ..., cNH]
+        ck = [c_k0, c_k1, ..., c_k(n-1)]
+        c_ki is the frequency coefficient for the kth harmonic of the ith degree
+            of freedom
+
+    Raises
+    ------
+    ValueError
+        If lengths of `ks`, `dofs`, `is_cosines`, and `coefficients` are not
+        equal
+    ValueError
+        If k > NH for any k in `ks`
+    ValueError
+        If dof >= n for any dof in `dofs`
     """
     length = len(ks)
     if (
@@ -92,14 +206,14 @@ def get_b_ext(
     )
 
 
-def extract_dofs(coefficients: ndarray, NH: int, n: int):
+def extract_dofs(coefficients: ndarray, NH: int, n: int) -> ndarray:
     """Reshape the coefficients by degree of freedom.
 
     Parameters
     ----------
     coefficients
         Should be of the form (a0, a1, ..., aNH) where ak denotes the
-        coefficients of the 0th harmonic for all n degrees of freedom.
+        coefficients of the kth harmonic for the n degrees of freedom.
 
     Returns
     -------

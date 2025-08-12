@@ -1,7 +1,9 @@
 argnames
 cmap
+docstrings
 figsize
 jndarray
 ndarray
+sparray
 tlim
 zlim
