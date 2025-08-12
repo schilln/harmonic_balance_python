@@ -7,14 +7,14 @@ ndarray = np.ndarray
 sparray = sparse.sparray
 
 
-def get_gamma(omega: float, n: int, NH: int, N: int) -> sparray:
+def get_gamma(omega: float, NH: int, n: int, N: int) -> sparray:
     return sparse.hstack(
         [_col(n, samples) for samples in _get_gamma_samples(omega, NH, N)],
         format="csr",
     )
 
 
-def get_inv_gamma(omega: float, n: int, NH: int, N: int) -> sparray:
+def get_inv_gamma(omega: float, NH: int, n: int, N: int) -> sparray:
     return sparse.vstack(
         [_row(n, samples) for samples in _get_inv_gamma_samples(omega, NH, N)],
         format="csr",
