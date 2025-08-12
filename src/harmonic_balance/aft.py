@@ -33,8 +33,8 @@ def _get_inv_gamma_samples(omega, NH, N):
 
 
 def _col(n, samples):
-    return sp.kron(sp.eye(n), samples.reshape(-1, 1))
+    return sp.kron(sp.eye_array(n), samples.reshape(-1, 1))
 
 
 def _row(n, samples):
-    return sp.kron(sp.eye(n), samples)
+    return sp.kron(sp.eye_array(n), samples.reshape(1, -1))
