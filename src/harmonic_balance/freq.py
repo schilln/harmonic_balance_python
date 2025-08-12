@@ -11,6 +11,18 @@ sparray = sparse.sparray
 FFT_NORM = "forward"
 
 
+def get_derivative(
+    omega: float,
+    coefficients: sparray | ndarray,
+    NH: int,
+    n: int,
+    derivative: int = 1,
+) -> sparray:
+    factors = (1j * omega * np.arange(NH + 1)) ** derivative
+    factors = np.repeat(factors, n)
+    return factors * coefficients
+
+
 def get_A(omega: float, NH: int, M: ndarray, C: ndarray, K: ndarray) -> sparray:
     """Construct matrix defining linear dynamics in frequency domain.
 
