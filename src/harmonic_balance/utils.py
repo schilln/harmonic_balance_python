@@ -182,3 +182,9 @@ def extract_dofs(
         shape (n, NH + 1)
     """
     return coefficients.reshape((n, NH + 1), order="F")
+
+
+def abs_max(a, axis=None):
+    a_max = np.max(a, axis=axis)
+    a_min = np.min(a, axis=axis)
+    return np.where(-a_min > a_max, a_min, a_max)
