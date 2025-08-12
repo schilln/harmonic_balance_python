@@ -133,28 +133,6 @@ def get_b_ext(
     )
 
 
-def extract_dofs(
-    coefficients: ndarray | sparray, n: int
-) -> ndarray | sparray:
-    """Reshape the coefficients by degree of freedom.
-
-    Parameters
-    ----------
-    coefficients
-        Should be of the form (a0, a1, ..., aNH) where ak denotes the
-        coefficients of the kth harmonic for the n degrees of freedom.
-    n
-        Number of degrees of freedom
-
-    Returns
-    -------
-    reshaped
-        Coefficients where each row corresponds to a degree of freedom
-        shape (n, NH + 1)
-    """
-    return coefficients.reshape((n, -1), order="F")
-
-
 def _get_block(
     k: int, omega: float, M: ndarray, C: ndarray, K: ndarray
 ) -> ndarray:
