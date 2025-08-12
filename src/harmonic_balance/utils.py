@@ -206,7 +206,9 @@ def get_b_ext(
     )
 
 
-def extract_dofs(coefficients: ndarray, NH: int, n: int) -> ndarray:
+def extract_dofs(
+    coefficients: ndarray | sparray, NH: int, n: int
+) -> ndarray | sparray:
     """Reshape the coefficients by degree of freedom.
 
     Parameters
@@ -221,4 +223,4 @@ def extract_dofs(coefficients: ndarray, NH: int, n: int) -> ndarray:
         Coefficients where each row corresponds to a degree of freedom
         shape (n, NH + 1)
     """
-    return np.reshape(coefficients, (n, NH + 1), order="F")
+    return coefficients.reshape((n, NH + 1), order="F")
