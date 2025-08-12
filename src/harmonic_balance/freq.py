@@ -3,24 +3,23 @@
 from collections import abc
 
 import numpy as np
-import scipy
 from scipy import sparse
 
 ndarray = np.ndarray
-sparray = scipy.sparse.sparray
+sparray = sparse.sparray
 
 FFT_NORM = "forward"
 
 
-def get_A(NH: int, omega: float, M: ndarray, C: ndarray, K: ndarray) -> sparray:
+def get_A(omega: float, NH: int, M: ndarray, C: ndarray, K: ndarray) -> sparray:
     """Construct matrix defining linear dynamics in frequency domain.
 
     Parameters
     ----------
-    NH
-        Assumed highest harmonic index
     omega
         Fundamental frequency
+    NH
+        Assumed highest harmonic index
     M
         Mass matrix
     C
@@ -131,7 +130,7 @@ def get_b_ext(
     total_length = n * (NH + 1)
     indices = n * ks + dofs
 
-    return scipy.sparse.csc_array(
+    return sparse.csc_array(
         (exp_coefficients, (indices, np.zeros(length))),
         shape=(total_length, 1),
         dtype=complex,
