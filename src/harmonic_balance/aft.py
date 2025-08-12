@@ -22,7 +22,9 @@ def get_inv_gamma(omega: float, NH: int, n: int, N: int) -> sparray:
 
 
 def time_from_freq(n: int, gamma: sparray, freq: sparray) -> sparray:
-    return gamma[:, :n] @ freq[:n] + 2 * (gamma[:, n:] @ freq[n:]).real
+    return (
+        gamma[:, :n].real @ freq[:n].real + 2 * (gamma[:, n:] @ freq[n:]).real
+    )
 
 
 def _get_tls(omega: float, N: int) -> ndarray:
