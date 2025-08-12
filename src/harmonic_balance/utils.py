@@ -1,8 +1,8 @@
 import numpy as np
-import scipy
+from scipy import sparse
 
 ndarray = np.ndarray
-sparray = scipy.sparse.sparray
+sparray = sparse.sparray
 
 
 def max_abs(
