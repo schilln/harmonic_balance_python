@@ -21,7 +21,7 @@ def get_A(NH: int, omega: float, M: ndarray, C: ndarray, K: ndarray):
 
 def get_b_ext(
     NH: int,
-    N: int,
+    n: int,
     ks: abc.Iterable[int],
     dofs: abc.Iterable[int],
     is_cosines: abc.Iterable[bool],
@@ -37,7 +37,7 @@ def get_b_ext(
     ----------
     NH
         The number of assumed harmonics, i.e., 0, 1, ..., N_H
-    N
+    n
         The number of degrees of freedom in the system
     ks
         The harmonic indices corresponding to each coefficient in `coefficients`
@@ -64,7 +64,7 @@ def get_b_ext(
         raise ValueError(
             "At least one specified harmonic index is greater than NH."
         )
-    if any(dof >= N for dof in dofs):
+    if any(dof >= n for dof in dofs):
         raise ValueError(
             "At least one specified degree of freedom is greater than or equal"
             " to N."
@@ -82,8 +82,8 @@ def get_b_ext(
     exp_coefficients[k_neq_0_mask & ~is_cosines] *= -1j
     exp_coefficients[k_neq_0_mask] /= 2
 
-    total_length = N * (NH + 1)
-    indices = N * ks + dofs
+    total_length = n * (NH + 1)
+    indices = n * ks + dofs
 
     return scipy.sparse.csc_array(
         (exp_coefficients, (indices, np.zeros(length))),
@@ -92,19 +92,19 @@ def get_b_ext(
     )
 
 
-def extract_dofs(coefficients: ndarray, NH: int, N: int):
+def extract_dofs(coefficients: ndarray, NH: int, n: int):
     """Reshape the coefficients by degree of freedom.
 
     Parameters
     ----------
     coefficients
         Should be of the form (a0, a1, ..., aNH) where ak denotes the
-        coefficients of the 0th harmonic for all N degrees of freedom.
+        coefficients of the 0th harmonic for all n degrees of freedom.
 
     Returns
     -------
     reshaped
         Coefficients where each row corresponds to a degree of freedom
-        shape (N, NH + 1)
+        shape (n, NH + 1)
     """
-    return np.reshape(coefficients, (N, NH + 1), order="F")
+    return np.reshape(coefficients, (n, NH + 1), order="F")
