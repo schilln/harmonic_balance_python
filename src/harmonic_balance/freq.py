@@ -4,6 +4,7 @@ from collections import abc
 
 import numpy as np
 import scipy
+from scipy import sparse
 
 ndarray = np.ndarray
 sparray = scipy.sparse.sparray
@@ -33,7 +34,11 @@ def get_A(NH: int, omega: float, M: ndarray, C: ndarray, K: ndarray) -> sparray:
         Frequency-domain linear dynamics matrix
         shape (n * (NH + 1), n * (NH + 1))
     """
-    return scipy.sparse.block_diag(
+    # Less efficient implementation:
+    # sparse.kron(_get_diag_nabla(omega, NH, 2), M)
+    # + sparse.kron(_get_diag_nabla(omega, NH), C)
+    # + sparse.kron(sparse.eye_array(NH + 1), K)
+    return sparse.block_diag(
         [_get_block(k, omega, M, C, K) for k in range(0, NH + 1)]
     ).tocsr()
 
@@ -138,7 +143,6 @@ def _get_block(
 ) -> ndarray:
     """Construct block for matrix defining linear dynamics in frequency domain.
 
-
     Parameters
     ----------
     k
@@ -163,3 +167,11 @@ def _get_block(
         shape (n, n)
     """
     return -k * omega**2 * M + 1j * k * omega * C + K
+
+
+def _get_nabla(omega: float, NH: int, exponent: int = 1):
+    return (1j * omega * np.arange(NH + 1)) ** exponent
+
+
+def _get_diag_nabla(omega: float, NH: int, exponent: int = 1):
+    return sparse.diags_array(_get_nabla(omega, NH, exponent))
