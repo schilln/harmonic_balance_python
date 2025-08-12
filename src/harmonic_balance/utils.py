@@ -37,8 +37,7 @@ def _max_abs_np(a, axis: int | tuple[int] | None = None) -> ndarray:
         a_min = a.min(axis=axis)
         return np.where(-a_min > a_max, a_min, a_max)
     else:
-        a_abs = abs(a)
-        return np.argmax(a_abs, axis=axis)
+        return abs(a).max(axis=axis)
 
 
 def _max_abs_sp(a, axis: int | None = None) -> sparray:

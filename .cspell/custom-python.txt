@@ -1,3 +1,5 @@
+argmax
+argmin
 argnames
 cmap
 docstrings
