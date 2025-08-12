@@ -24,7 +24,11 @@ def extract_dofs_freq(
         Coefficients where each row corresponds to a degree of freedom
         shape (n, NH + 1)
     """
-    return coefficients.reshape((n, -1), order="F")
+    result = coefficients.reshape((n, -1), order="F")
+    if isinstance(result, sparse.coo_array):
+        return result.tocsr()
+    else:
+        return result
 
 
 def extract_dofs_time(time: ndarray | sparray, n: int) -> ndarray | sparray:
@@ -44,7 +48,11 @@ def extract_dofs_time(time: ndarray | sparray, n: int) -> ndarray | sparray:
         Time signal where each row corresponds to a degree of freedom
         shape (n, N)
     """
-    return time.reshape((n, -1), order="C")
+    result = time.reshape((n, -1), order="C")
+    if isinstance(result, sparse.coo_array):
+        return result.tocsr()
+    else:
+        return result
 
 
 def max_abs(
