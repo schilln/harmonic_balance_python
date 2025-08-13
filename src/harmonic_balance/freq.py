@@ -11,6 +11,24 @@ sparray = sparse.sparray
 FFT_NORM = "forward"
 
 
+def solve_linear_system(A: sparray, b_ext: sparray) -> sparray:
+    """Solve the linear portion of the system (i.e., exclude nonlinear forces).
+
+    Parameters
+    ----------
+    A
+        Matrix describing linear dynamics in frequency domain (see `get_A`)
+    b_ext
+        Exponential Fourier coefficients of external force (see `get_b_ext`)
+
+    Returns
+    -------
+    z
+        Exponential Fourier coefficients of solution z for Az = b_ext
+    """
+    return sparse.linalg.spsolve(A, b_ext)
+
+
 def get_derivative(
     omega: float,
     coefficients: sparray | ndarray,
