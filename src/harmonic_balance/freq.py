@@ -142,9 +142,9 @@ def get_b_ext(
     total_length = n * (NH + 1)
     indices = n * ks + dofs
 
-    return sparse.csc_array(
-        (exp_coefficients, (indices, np.zeros(length))),
-        shape=(total_length, 1),
+    return sparse.csr_array(
+        (exp_coefficients, (indices,)),
+        shape=(total_length,),
         dtype=complex,
     )
 
