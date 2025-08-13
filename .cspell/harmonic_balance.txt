@@ -1,2 +1,4 @@
+arclength
 dofs
 nabla
+xdot
