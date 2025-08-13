@@ -89,13 +89,19 @@ def get_P(
     omega1: float,
     omega0: float,
     s: float,
-):
+) -> float:
     return sparse.linalg.norm(z1 - z0) ** 2 + (omega1 - omega0) ** 2 - s**2
 
 
-def get_dP_dz():
-    raise NotImplementedError()
+def get_dP_dz(
+    z1: sparray | ndarray,
+    z0: sparray | ndarray,
+) -> sparray | ndarray:
+    return 2 * (z1 - z0)
 
 
-def get_dP_domega():
-    raise NotImplementedError()
+def get_dP_domega(
+    omega1: float,
+    omega0: float,
+) -> float:
+    return 2 * (omega1 - omega0)
