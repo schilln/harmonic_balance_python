@@ -13,17 +13,13 @@ array = ndarray | sparray
 def get_R(
     z: sparray | ndarray,
     omega: float,
+    A: sparray,
     f_nl: abc.Callable[[ndarray, ndarray, int], ndarray],
     b_ext: sparray,
     NH: int,
     n: int,
     N: int,
-    M: ndarray,
-    C: ndarray,
-    K: ndarray,
 ) -> sparray:
-    A = freq.get_A(omega, NH, M, C, K)
-
     zp = freq.get_derivative(omega, z, NH, n)
     gamma = aft.get_gamma(omega, NH, n, N)
 
@@ -36,15 +32,13 @@ def get_R(
 
 
 def get_dR_dz(
-    omega: float,
-    NH: int,
-    M: ndarray,
-    C: ndarray,
-    K: ndarray,
+    A: sparray,
     db_dz: sparray | ndarray,
 ) -> sparray:
-    A = freq.get_A(omega, NH, M, C, K)
-    return A + db_dz
+    res = A + db_dz
+    if isinstance(res, np.matrix):
+        return res.A
+    return res
 
 
 def get_dR_d_omega(
