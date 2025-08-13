@@ -55,7 +55,7 @@ def get_initial_guess(
 
 def solve_nonlinear(
     omega: float,
-    z: ndarray,
+    z0: ndarray,
     A: sparray,
     b_ext: ndarray,
     f_nl: abc.Callable[[ndarray, ndarray, int], ndarray],
@@ -73,6 +73,8 @@ def solve_nonlinear(
     ----------
     omega
         Fundamental frequency
+    z0
+        Initial guess for solution
     A
         Matrix describing linear dynamics in frequency domain (see `get_A`)
         shape (n * (NH + 1), n * (NH + 1))
@@ -110,10 +112,11 @@ def solve_nonlinear(
     i
         Number of iterations
     """
-    R = alc.get_R(z, omega, A, f_nl, b_ext, NH, n, N)
-    if get_rel_error(R, z) < tol:
-        return z, R, True, 0
+    R = alc.get_R(z0, omega, A, f_nl, b_ext, NH, n, N)
+    if get_rel_error(R, z0) < tol:
+        return z0, R, True, 0
 
+    z = z0
     converged = False
     for i in range(max_iter - 1):
         z += _solve_nonlinear_step(
