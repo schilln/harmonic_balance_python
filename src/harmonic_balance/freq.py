@@ -34,9 +34,9 @@ def get_derivative(
     coefficients: sparray | ndarray,
     NH: int,
     n: int,
-    derivative: int = 1,
+    order: int = 1,
 ) -> sparray:
-    factors = (1j * omega * np.arange(NH + 1)) ** derivative
+    factors = (1j * omega * np.arange(NH + 1)) ** order
     factors = np.repeat(factors, n)
     return factors * coefficients
 
