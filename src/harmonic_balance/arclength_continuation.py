@@ -10,6 +10,7 @@ sparray = sparse.sparray
 array = ndarray | sparray
 # TODO: Fix the use of these type annotations.
 
+
 def get_R(
     z: sparray | ndarray,
     omega: float,
@@ -25,7 +26,7 @@ def get_R(
 
     x = aft.time_from_freq(n, gamma, z)
     xp = aft.time_from_freq(n, gamma, zp)
-    fx = f_nl(x, xp)
+    fx = f_nl(x, xp, N)
     b = aft.freq_from_time(aft.get_inv_gamma(omega, NH, n, N), fx)
 
     return A @ z + b - b_ext
@@ -70,11 +71,11 @@ def get_db_dz(
     zp = freq.get_derivative(omega, z, NH, n)
     xp = aft.time_from_freq(n, gamma, zp)
 
-    db_dx = inv_gamma @ df_nl_dx(x, xp) @ gamma
+    db_dx = inv_gamma @ df_nl_dx(x, xp, N) @ gamma
     db_d_xdot = (
         omega
         * inv_gamma
-        @ df_nl_d_xdot(x, xp)
+        @ df_nl_d_xdot(x, xp, N)
         @ gamma
         @ sparse.kron(freq._get_diag_nabla(omega, NH), sparse.eye_array(n))
     )
