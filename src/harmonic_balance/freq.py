@@ -18,13 +18,16 @@ def solve_linear_system(A: sparray, b_ext: sparray) -> sparray:
     ----------
     A
         Matrix describing linear dynamics in frequency domain (see `get_A`)
+        shape (n * (NH + 1), n * (NH + 1))
     b_ext
         Exponential Fourier coefficients of external force (see `get_b_ext`)
+        shape (n * (NH + 1),)
 
     Returns
     -------
     z
         Exponential Fourier coefficients of solution z for Az = b_ext
+        shape (n * (NH + 1),)
     """
     return sparse.linalg.spsolve(A, b_ext)
 
@@ -45,6 +48,7 @@ def get_derivative(
         Fundamental frequency
     coefficients
         Exponential Fourier coefficients to take time derivative of
+        shape (n * (NH + 1),)
     NH
         Assumed highest harmonic index
     n
@@ -57,6 +61,7 @@ def get_derivative(
     -------
     derivative
         Order-th time derivative of coefficients in frequency domain
+        shape (n * (NH + 1),)
     """
     factors = (1j * omega * np.arange(NH + 1)) ** order
     factors = np.repeat(factors, n)
@@ -74,10 +79,13 @@ def get_A(omega: float, NH: int, M: ndarray, C: ndarray, K: ndarray) -> sparray:
         Assumed highest harmonic index
     M
         Mass matrix
+        shape (n, n)
     C
         Damping matrix
+        shape (n, n)
     K
         Stiffness matrix
+        shape (n, n)
 
     Returns
     -------
