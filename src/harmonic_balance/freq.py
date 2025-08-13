@@ -36,6 +36,28 @@ def get_derivative(
     n: int,
     order: int = 1,
 ) -> sparray:
+    """Get exponential Fourier coefficients of a frequency signal's
+    time derivative.
+
+    Parameters
+    ----------
+    omega
+        Fundamental frequency
+    coefficients
+        Exponential Fourier coefficients to take time derivative of
+    NH
+        Assumed highest harmonic index
+    n
+        Number of degrees of freedom
+    order
+        Integer indicating which derivative to take, e.g., `1` denotes
+        first derivative
+
+    Returns
+    -------
+    derivative
+        Order-th time derivative of coefficients in frequency domain
+    """
     factors = (1j * omega * np.arange(NH + 1)) ** order
     factors = np.repeat(factors, n)
     return factors * coefficients
