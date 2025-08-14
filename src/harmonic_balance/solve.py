@@ -116,9 +116,9 @@ def solve_nonlinear(
     if get_rel_error(R, z0) < tol:
         return z0, R, True, 0
 
-    z = z0
+    z = z0.copy()
     converged = False
-    for i in range(max_iter - 1):
+    for i in range(max_iter):
         z += _solve_nonlinear_step(
             omega, z, A, b_ext, f_nl, df_nl_dx, df_nl_d_xdot, NH, n, N
         )
@@ -128,7 +128,7 @@ def solve_nonlinear(
             converged = True
             break
 
-    return z, R, converged, i + 1
+    return z, R, converged, i + 1 if "i" in locals() else 0
 
 
 def _solve_nonlinear_step(
