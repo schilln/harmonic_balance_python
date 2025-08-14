@@ -1,4 +1,5 @@
 arclength
 dofs
+Galerkin
 nabla
 xdot

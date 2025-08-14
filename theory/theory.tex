@@ -10,6 +10,7 @@ We implement the method of harmonic balance using exponential periodic basis fun
 Assume the state $\x(t): \R \rightarrow \R^n$ is governed by
 \begin{align}
   M \ddot \x + C \dot \x + K \x + \f\ts{nl}(\x, \dot \x) = \f\ts{ext}(\omega, t).
+  \label{eq:system-time}
 \end{align}
 Note that $n$ is the number of degrees of freedom;
 $M$, $C$, and $K$ are the mass, damping, and stiffness matrices, respectively;
@@ -130,9 +131,79 @@ Likewise,
 \end{align*}
 This yields the identities
 \begin{align}
+  \label{eq:x(z)}
   \x(t) &= \paren{Q(t) \otimes I_n} \z \\
+  \label{eq:xp(z)}
   \dot \x(t) &= \omega \paren{Q(t) \nabla \otimes I_n} \z \\
+  \label{eq:xpp(z)}
   \ddot \x(t) &= \omega^2 \paren*{Q(t) \nabla^2 \otimes I_n} \z.
+\end{align}
+
+\section{Projecting the governing equation}
+
+We project the system equation from the time domain \eqref{eq:system-time} to the frequency domain via Fourier--Galerkin projection (I think).
+First, define the inner product on functions $f: \R \rightarrow \C$:
+\begin{align}
+  \inpr{f, g} \coloneq \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \conj{f(t)} g(t) dt.
+\end{align}
+Now let $-N_H \le k, j \le N_H$, and write $\hat k \coloneq k + N_H$ and $\hat j \coloneq j + N_H$.
+Then
+\begin{align*}
+  &\phantom{{}={}} \frac \omega{2 \pi} \paren*{\int_0^{2 \pi / \omega} Q(t)^* Q(t) dt}_{\hat k \hat j} \\
+  &= \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \paren*{Q(t)^* Q(t)}_{\hat k \hat j} dt \\
+  &= \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \exp\paren{-i k \omega t} \exp\paren{i j \omega t} dt \\
+  &= \inpr{\exp\paren{-i k \omega t},\; \exp\paren{i j \omega t}} \\
+  &= \delta_{kj}
+\end{align*}
+since the basis functions are orthonormal in this inner product.
+Then
+\begin{align*}
+  \frac \omega{2 \pi} \paren*{\int_0^{2 \pi / \omega} Q(t)^* Q(t) dt}
+  = I_{2 N_H + 1}.
+\end{align*}
+
+Next, we'll rewrite \eqref{eq:system-time} using \eqref{eq:x(z)}, \eqref{eq:xp(z)}, and \eqref{eq:xpp(z)}, beginning with the first and using the mixed-product property of the Kronecker product:
+\begin{align}
+  \nonumber
+  &\phantom{{}={}} M \ddot \x \\
+  \nonumber
+  &= M \omega^2 \paren*{Q(t) \nabla^2 \otimes I_n} \z \\
+  \nonumber
+  &= \omega^2 (1 \otimes M) \paren*{Q(t) \nabla^2 \otimes I_n} \z \\
+  \nonumber
+  &= \omega^2 \bbrack*{\paren*{1 Q(t) \nabla^2} \otimes (M I_n)} \z \\
+  &= \omega^2 \bbrack*{\paren*{Q(t) \nabla^2} \otimes M} \z.
+\end{align}
+The same computations show
+\begin{align}
+  C \dot \x &= \omega \bbrack*{\paren*{Q(t) \nabla} \otimes C} \z \\
+  K \x &= \bbrack*{Q(t) \otimes K} \z.
+\end{align}
+Now the system equation \eqref{eq:system-time} becomes
+\begin{align}
+  \label{eq:system-time-kron}
+  \bbrack*{
+    \omega^2 \paren*{Q(t) \nabla^2} \otimes M
+    + \omega \paren*{Q(t) \nabla} \otimes C
+    + Q(t) \otimes K
+  }\z
+  = (Q(t) \otimes I_n) \bb(\z).
+\end{align}
+Now we integrate against $Q(t)^*$ to obtain an algebraic system of equations in the frequency domain:
+\begin{align*}
+  &\phantom{{}={}} \frac \omega{2 \pi} \int_0^{2 \pi / \omega} Q(t)^* \omega^2 \paren*{Q(t) \nabla^2} \otimes M \, dt \\
+  &= \frac \omega{2 \pi} \int_0^{2 \pi / \omega} Q(t)^* Q(t) \, dt \; \omega^2 \nabla^2 \otimes M \\
+  &= I_{2 N_H + 1} \; \omega^2 \nabla^2 \otimes M \\
+  &= \omega^2 \nabla^2 \otimes M.
+\end{align*}
+Following the same process for the other terms in \eqref{eq:system-time-kron}, we at last obtain
+\begin{align}
+  \bbrack*{
+    \omega^2 \nabla^2 \otimes M
+    + \omega \nabla \otimes C
+    + I_{2 N_H + 1} \otimes K
+  } \z
+  = \bb(\z).
 \end{align}
 
 \section{It's gettin' real}
