@@ -45,14 +45,17 @@ def get_dR_dz(
 def get_dR_d_omega(
     z: sparray | ndarray,
     omega: float,
+    df_nl_d_xdot: abc.Callable[[ndarray, ndarray, int], ndarray],
     NH: int,
+    n: int,
+    N: int,
     M: ndarray,
     C: ndarray,
 ) -> sparray:
     return (
-        2 * omega * sparse.kron(freq._get_diag_nabla(omega, NH, 2), M)
+        2 * sparse.kron(freq._get_diag_nabla(omega, NH, 2), M)
         + sparse.kron(freq._get_diag_nabla(omega, NH), C)
-    ) @ z
+    ) / omega @ z + get_db_d_omega(omega, z, df_nl_d_xdot, NH, n, N)
 
 
 def get_db_dz(
@@ -73,14 +76,38 @@ def get_db_dz(
 
     db_dx = inv_gamma @ df_nl_dx(x, xp, N) @ gamma
     db_d_xdot = (
-        omega
-        * inv_gamma
+        inv_gamma
         @ df_nl_d_xdot(x, xp, N)
         @ gamma
         @ sparse.kron(freq._get_diag_nabla(omega, NH), sparse.eye_array(n))
     )
 
     return db_dx + db_d_xdot
+
+
+def get_db_d_omega(
+    omega: float,
+    z: sparray | ndarray,
+    df_nl_d_xdot: abc.Callable[[ndarray, ndarray, int], ndarray],
+    NH: int,
+    n: int,
+    N: int,
+):
+    inv_gamma = aft.get_inv_gamma(omega, NH, n, N)
+    gamma = aft.get_gamma(omega, NH, n, N)
+
+    x = aft.time_from_freq(n, gamma, z)
+    zp = freq.get_derivative(omega, z, NH, n)
+    xp = aft.time_from_freq(n, gamma, zp)
+
+    return (
+        inv_gamma
+        @ df_nl_d_xdot(x, xp, N)
+        @ gamma
+        @ freq._get_diag_nabla(omega, NH)
+        / omega
+        @ z
+    )
 
 
 def get_P(
