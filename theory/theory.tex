@@ -1,0 +1,171 @@
+\documentclass{article}
+
+\newcommand{\commandprependpath}{style/}
+\usepackage{style/style}
+
+\begin{document}
+
+We implement the method of harmonic balance using exponential periodic basis functions instead of trigonometric.
+
+Assume the state $\x(t): \R \rightarrow \R^n$ is governed by
+\begin{align}
+  M \ddot \x + C \dot \x + K \x + \f\ts{nl}(\x, \dot \x) = \f\ts{ext}(\omega, t).
+\end{align}
+Note that $n$ is the number of degrees of freedom;
+$M$, $C$, and $K$ are the mass, damping, and stiffness matrices, respectively;
+$\f\ts{nl}$ is the internal, potentially nonlinear force;
+$\f\ts{ext}$ is the external force;
+and $\omega$ is the fundamental frequency of the external force.
+
+Then $x$ is periodic with period $2 \pi / \omega$, so we can estimate it as a finite sum of exponential periodic basis functions:
+\begin{align}
+  \x(t) \approx \sum_{k=-N_H}^{N_H} \ab_k \exp\paren{i k \omega t}.
+\end{align}
+We can write the forces similarly:
+\begin{align}
+  \f\ts{nl}(\x, \dot \x)
+  &\approx \sum_{k=-N_H}^{N_H} \cb_k \exp\paren{i k \omega t} \\
+  \f\ts{ext}
+  &\approx \sum_{k=-N_H}^{N_H} \db_k \exp\paren{i k \omega t}.
+\end{align}
+Collect the Fourier coefficients:
+\begin{align}
+  \z &\coloneq
+  \begin{bmatrix}
+    \ab_{-N_H}\trp & \cdots & \ab_{-1}\trp &
+    \ab_0\trp & \ab_1\trp & \cdots & \ab_{N_H}\trp
+  \end{bmatrix}\trp \in \C^{\paren{2 N_H + 1} n \times 1} \\
+  \bb &\coloneq
+  \begin{bmatrix}
+    \cb_{-N_H}\trp & \cdots & \cb_{-1}\trp &
+    \cb_0\trp & \cb_1\trp & \cdots & \cb_{N_H}\trp
+  \end{bmatrix}\trp \\
+  \bb\ts{ext} &\coloneq
+  \begin{bmatrix}
+    \db_{-N_H}\trp & \cdots & \db_{-1}\trp &
+    \db_0\trp & \db_1\trp & \cdots & \db_{N_H}\trp
+  \end{bmatrix}\trp
+\end{align}
+and collect the exponential periodic basis functions
+\begin{align}
+  Q(t) \coloneq
+  \begin{bmatrix}
+    e^{-i N_H \omega t} & \cdots & e^{-i \omega t} & 1 &
+    e^{i \omega t} & \cdots & e^{i N_H \omega t}
+  \end{bmatrix} \in \C^{1 \times (2 N_H + 1)}
+\end{align}
+so that
+\begin{align}
+  \x(t)
+  &= (Q(t) \otimes I_n) \z \\
+  \f\ts{nl}(\x, \dot \x)
+  &= (Q(t) \otimes I_n) \bb \\
+  \f\ts{ext}(\omega, t)
+  &= (Q(t) \otimes I_n) \bb\ts{ext}
+\end{align}
+where $\otimes$ denotes the Kronecker product.
+Expanding the Kronecker product to make sure we're not pulling our own leg,
+\begin{gather*}
+  (Q(t) \otimes I_n) \\
+  =
+  \begin{bmatrix}
+    e^{-i N_H \omega t} I_n & \cdots & e^{-i \omega t} I_n & I_n &
+    e^{i \omega t} I_n & e^{i N_H \omega t} I_n
+  \end{bmatrix} \in \C^{\paren{2 N_H + 1} n \times n}
+\end{gather*}
+so
+\begin{gather*}
+  (Q(t) \otimes I_n) \z \\
+  =
+  \begin{bmatrix}
+    e^{-i N_H \omega t} I_n & \cdots & e^{-i \omega t} I_n & I_n &
+    e^{i \omega t} I_n & e^{i N_H \omega t} I_n
+  \end{bmatrix}
+  \begin{bmatrix}
+    \ab_{-N_H} \\ \vdots \\ \ab_{-1} \\
+    \ab_0 \\ \ab_1 \\ \vdots \\ \ab_{N_H}
+  \end{bmatrix} \\
+  = \x(t).
+\end{gather*}
+
+\section{Differentiating}
+
+Suppose we want to write the Fourier series for $\dot \x$?
+Observe,
+\begin{align*}
+  \dot \x(t)
+  &= \frac d{dt} \x
+  = \frac d{dt} (Q(t) \otimes I_n) \z \\
+  &= \paren*{\dot Q(t) \otimes I_n} \z.
+\end{align*}
+Letting
+\begin{align*}
+  \widetilde \nabla
+  &\coloneq
+  \begin{bmatrix}
+    -i N_H & \cdots -i & 0 & i & \cdots & i N_H
+  \end{bmatrix} \\
+  \nabla &\coloneq \diag{\widetilde \nabla}
+\end{align*}
+we find that
+\begin{align*}
+  \dot Q(t)
+  &=
+  \omega
+  \begin{bmatrix}
+    -i N_H e^{-i N_H \omega t} & \cdots & -i e^{-i \omega t} & 0 &
+    i e^{i \omega t} & \cdots & i N_H e^{i N_H \omega t}
+  \end{bmatrix} \\
+  &= \omega Q(t) \odot \widetilde \nabla \\
+  &= \omega Q(t) \nabla.
+\end{align*}
+Likewise,
+\begin{align*}
+  \ddot Q(t)
+  &= \omega^2 Q(t) \nabla^2.
+\end{align*}
+This yields the identities
+\begin{align}
+  \x(t) &= \paren{Q(t) \otimes I_n} \z \\
+  \dot \x(t) &= \omega \paren{Q(t) \nabla \otimes I_n} \z \\
+  \ddot \x(t) &= \omega^2 \paren*{Q(t) \nabla^2 \otimes I_n} \z.
+\end{align}
+
+\section{It's gettin' real}
+
+Since $\x$ is real, we know $\ab_{-k} = \conj{\ab_k}$ and $\exp\paren{-i k \omega t} = \conj{\exp\paren{i k \omega t}}$, so we can write
+\begin{align*}
+  \x(t)
+  &\approx \sum_{k=-N_H}^{N_H} \ab_k \exp\paren{i k \omega t} \\
+  &= \ab_0 + \sum_{k=0}^{N_H}
+  \ab_k \exp\paren{i k \omega t}
+  + \ab_{-k} \exp\paren{-i k \omega t} \\
+  &= \ab_0 + \sum_{k=0}^{N_H}
+  \ab_k \exp\paren{i k \omega t}
+  + \conj{\ab_k \exp\paren{i k \omega t}} \\
+  &= \ab_0 + 2 \sum_{k=0}^{N_H} \Re\bbrack{\ab_k \exp\paren{i k \omega t}}.
+\end{align*}
+We can write the forces similarly:
+\begin{align*}
+  \f\ts{nl}(\x, \dot \x)
+  &= \cb_0 + 2 \sum_{k=0}^{N_H} \Re\bbrack{\cb_k \exp\paren{i k \omega t}}\\
+  \f\ts{ext}
+  &= \db_0 + 2 \sum_{k=0}^{N_H} \Re\bbrack{\db_k \exp\paren{i k \omega t}}.
+\end{align*}
+Collect the Fourier coefficients:
+\begin{align*}
+  \widehat \z &\coloneq
+  \begin{bmatrix}
+    \ab_0\trp & \ab_1\trp & \cdots & \ab_{N_H}\trp
+  \end{bmatrix}\trp \in \C^{n\paren{N_H + 1}} \\
+  \widehat \bb &\coloneq
+  \begin{bmatrix}
+    \cb_0\trp & \cb_1\trp & \cdots & \cb_{N_H}\trp
+  \end{bmatrix}\trp \\
+  \widehat \bb\ts{ext} &\coloneq
+  \begin{bmatrix}
+    \db_0\trp & \db_1\trp & \cdots & \db_{N_H}\trp
+  \end{bmatrix}\trp.
+\end{align*}
+
+\end{document}
