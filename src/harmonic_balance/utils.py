@@ -177,6 +177,71 @@ def get_f_ext(
     return f_ext
 
 
+def get_time_residual(
+    xx: ndarray,
+    xxp: ndarray,
+    xxpp: ndarray,
+    M: ndarray,
+    C: ndarray,
+    K: ndarray,
+    f_ext: abc.Callable[[float, float], ndarray],
+    f_nl: abc.Callable[[ndarray, ndarray, int], ndarray],
+    omega: float,
+    tls: ndarray,
+    n: int,
+):
+    """Get the residual in the time domain.
+
+    Parameters
+    ----------
+    xx
+        Time signal
+        shape (n, N)
+    xxp
+        Time derivative of time signal
+        shape (n, N)
+    xxpp
+        Second time derivative of time signal
+        shape (n, N)
+    M
+        Mass matrix
+        shape (n, n)
+    C
+        Damping matrix
+        shape (n, n)
+    K
+        Stiffness matrix
+        shape (n, n)
+    f_ext
+        External force function in time domain
+        See `get_f_ext`
+    f_nl
+        Nonlinear force function in time domain
+        [(n * N,), (n * N,), int] -> (n * N,)
+    omega
+        Fundamental frequency
+    tls
+        Time values at which to evaluate external force
+        shape (N,)
+    n
+        Number of degrees of freedom
+
+    Returns
+    -------
+    residual
+        Residual R = Mx'' + Cx' + Kx + f_nl(x, x') - f_ext(omega, t)
+        shape (n, N)
+    """
+
+    return (
+        M @ xxpp
+        + C @ xxp
+        + K @ xx
+        + extract_dofs_time(f_nl(xx.ravel(), xxp.ravel(), xx.shape[1]), n)
+        - np.stack([f_ext(omega, t) for t in tls]).T
+    )
+
+
 def _max_abs_np(a, axis: int | tuple[int] | None = None) -> ndarray:
     if not isinstance(a, ndarray):
         raise ValueError("`a` is not a np.ndarray")
