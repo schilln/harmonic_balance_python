@@ -4,6 +4,7 @@ argnames
 cmap
 docstrings
 figsize
+hyperparameters
 jndarray
 ndarray
 sparray
