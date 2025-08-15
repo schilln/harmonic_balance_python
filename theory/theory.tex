@@ -146,14 +146,14 @@ First, define the inner product on functions $f: \R \rightarrow \C$:
 \begin{align}
   \inpr{f, g} \coloneq \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \conj{f(t)} g(t) dt.
 \end{align}
-Now let $-N_H \le k, j \le N_H$, and write $\hat k \coloneq k + N_H$ and $\hat j \coloneq j + N_H$.
+Now let $-N_H \le k, \ell \le N_H$, and write $\hat k \coloneq k + N_H$ and $\hat \ell \coloneq \ell + N_H$.
 Then
 \begin{align*}
-  &\phantom{{}={}} \frac \omega{2 \pi} \paren*{\int_0^{2 \pi / \omega} Q(t)^* Q(t) dt}_{\hat k \hat j} \\
-  &= \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \paren*{Q(t)^* Q(t)}_{\hat k \hat j} dt \\
-  &= \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \exp\paren{-i k \omega t} \exp\paren{i j \omega t} dt \\
-  &= \inpr{\exp\paren{-i k \omega t},\; \exp\paren{i j \omega t}} \\
-  &= \delta_{kj}
+  &\phantom{{}={}} \frac \omega{2 \pi} \paren*{\int_0^{2 \pi / \omega} Q(t)^* Q(t) dt}_{\hat k \hat \ell} \\
+  &= \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \paren*{Q(t)^* Q(t)}_{\hat k \hat \ell} dt \\
+  &= \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \exp\paren{-i k \omega t} \exp\paren{i \ell \omega t} dt \\
+  &= \inpr{\exp\paren{-i k \omega t},\; \exp\paren{i \ell \omega t}} \\
+  &= \delta_{k \ell}
 \end{align*}
 since the basis functions are orthonormal in this inner product.
 Then
@@ -258,7 +258,7 @@ Examining a single summand, we find
     \q(k) a_{k, n-1}
   \end{bmatrix}
 \end{align*}
-where $a_{k, j}$ is the $k$th Fourier coefficient of the $j$th degree of freedom.
+where $a_{k, d}$ is the $k$th Fourier coefficient of the $d$th degree of freedom.
 Then
 \begin{align*}
   \Gamma \z =
@@ -274,12 +274,12 @@ Then
     \x_{n-1}
   \end{bmatrix}
 \end{align*}
-where $\x_j =
+where $\x_d =
 \begin{bmatrix}
-  x_j(t_0) & x_j(t_1) & \cdots & x_j(t_{N-1})
+  x_d(t_0) & x_d(t_1) & \cdots & x_d(t_{N-1})
 \end{bmatrix}
 $
-contains the values of the $j$th degree of freedom of $\x(t)$ at $t = t_0, \ldots, t_{N-1}$.
+contains the values of the $d$th degree of freedom of $\x(t)$ at $t = t_0, \ldots, t_{N-1}$.
 Write
 \begin{align}
   \x_s \coloneq \Gamma \z
