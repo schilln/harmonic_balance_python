@@ -7,6 +7,8 @@
 
 \begin{document}
 
+\section{Introduction}
+
 We implement the method of harmonic balance using exponential periodic basis functions instead of trigonometric.
 
 Assume the state $\x(t): \R \rightarrow \R^n$ is governed by
@@ -31,6 +33,9 @@ We can write the forces similarly:
   \f\ts{ext}(t)
   &\approx \sum_{k=-N_H}^{N_H} \db_k \exp\paren{i k \omega t}.
 \end{align}
+
+\section{Projecting the governing equation}
+
 Collect the Fourier coefficients:
 \begin{align}
   \z &\coloneq
@@ -95,7 +100,7 @@ so
   = \x(t).
 \end{gather*}
 
-\section{Differentiating}
+\subsection{Differentiating}
 
 Suppose we want to write the Fourier series for $\dot \x$?
 Observe,
@@ -142,7 +147,7 @@ This yields the identities
   \ddot \x(t) &= \omega^2 \paren*{Q(t) \nabla^2 \otimes I_n} \z.
 \end{align}
 
-\section{Projecting the governing equation}
+\subsection{Performing the projection}
 
 We project the system equation from the time domain \eqref{eq:system-time} to the frequency domain via Fourier--Galerkin projection (I think).
 First, define the inner product on functions $f: \R \rightarrow \C$:
@@ -414,7 +419,7 @@ Now we can write
 \end{align}
 Compare with \eqref{eq:x(z)}, \eqref{eq:xp(z)}, \eqref{eq:xpp(z)}.
 
-\section{It's gettin' real}
+\section{It's getting real}
 
 Since $\x$ is real, we know $\ab_{-k} = \conj{\ab_k}$ and $\exp\paren{-i k \omega t} = \conj{\exp\paren{i k \omega t}}$, so we can write
 \begin{align*}
