@@ -3,6 +3,8 @@
 \newcommand{\commandprependpath}{style/}
 \usepackage{style/style}
 
+\usepackage[margin=1in]{geometry}
+
 \begin{document}
 
 We implement the method of harmonic balance using exponential periodic basis functions instead of trigonometric.
@@ -287,6 +289,71 @@ Write
 to denote this sampling of $\x$ at $N$ points in time.
 
 \subsection{Computing frequency from time}
+
+We now guess at the form of $\Gamma^\dagger$, the pseudo-inverse of $\Gamma$, and check yields the identity when right multiplied by $\Gamma$ (assuming $N \ge 2 N_H + 1$).
+We try
+\begin{align}
+  \Gamma^\dagger \coloneq \frac1N
+  \begin{bmatrix}
+    I_n \otimes \q(-N_H)^* \\
+    \vdots \\
+    I_n \otimes \q(N_H)^*
+  \end{bmatrix}.
+\end{align}
+Again using the mixed-product property of the Kronecker product, we note
+\begin{align*}
+  &\phantom{{}={}} \bbrack*{I_n \otimes \q(k)^*} \bbrack*{I_n \otimes \q(\ell)} \\
+  &= I_n \otimes \bbrack*{\q(k)^* \q(\ell)}.
+\end{align*}
+Next observe that
+\begin{align*}
+  \frac1N \q(k)^* \q(\ell)
+  &= \frac1N \sum_{j=0}^{N-1} e^{-i k \omega t_j} e^{i \ell \omega t_j} \\
+  &\approx \frac \omega{2 \pi} \int_0^{2 \pi / \omega}
+  e^{-i k \omega t} e^{i \ell \omega t} \, dt \\
+  &= \inpr{e^{-i k \omega t},\; e^{i \ell \omega t}} \\
+  &= \delta_{k \ell}.
+\end{align*}
+Then
+\begin{align*}
+  &\phantom{{}={}} \Gamma^\dagger \Gamma \\
+  &= \frac1N
+  \begin{bmatrix}
+    I_n \otimes \q(-N_H)\trp \\
+    \vdots \\
+    I_n \otimes \q(N_H)\trp
+  \end{bmatrix}
+  \begin{bmatrix}
+    I_n \otimes \q(-N_H) & \cdots & I_n \q(N_H)
+  \end{bmatrix} \\
+  &=
+  \begin{bmatrix}
+    I_n \otimes \bbrack*{\q(-N_H)^* \q(-N_H)} &
+    I_n \otimes \bbrack*{\q(-N_H)^* \q(-N_H + 1)} &
+    \cdots &
+    I_n \otimes \bbrack*{\q(-N_H)^* \q(N_H)} \\
+    I_n \otimes \bbrack*{\q(-N_H + 1)^* \q(-N_H)} &
+    I_n \otimes \bbrack*{\q(-N_H + 1)^* \q(-N_H + 1)} &
+    \cdots & \\
+    \vdots & & \ddots & \\
+    I_n \otimes \bbrack*{\q(N_H)^* \q(-N_H)} &
+    \cdots &
+    \cdots &
+    I_n \otimes \bbrack*{\q(N_H)^* \q(N_H)} \\
+  \end{bmatrix} \\
+  &\approx
+  \begin{bmatrix}
+    \delta_{-N_H, -N_H} & \delta_{-N_H, -N_H + 1} & \cdots & \delta_{-N_H, N_H} \\
+    \delta_{-N_H + 1, -N_H} & \delta_{-N_H + 1, -N_H + 1} & \cdots & \delta_{-N_H + 1, N_H} \\
+    \vdots & & \ddots & \\
+    \delta_{N_H, -N_H} & \delta_{N_H, -N_H + 1} & \cdots & \delta_{N_H, N_H}
+  \end{bmatrix} \\
+  &= I_{2 N_H + 1}.
+\end{align*}
+Thus we can compute
+\begin{equation}
+  \z = \Gamma^\dagger \x_s.
+\end{equation}
 
 \section{It's gettin' real}
 
