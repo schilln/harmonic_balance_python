@@ -106,14 +106,15 @@ Observe,
   &= \paren*{\dot Q(t) \otimes I_n} \z.
 \end{align*}
 Letting
-\begin{align*}
+\begin{align}
   \widetilde \nabla
   &\coloneq
   \begin{bmatrix}
     -i N_H & \cdots -i & 0 & i & \cdots & i N_H
   \end{bmatrix} \\
+  \label{eq:nabla}
   \nabla &\coloneq \diag{\widetilde \nabla}
-\end{align*}
+\end{align}
 we find that
 \begin{align*}
   \dot Q(t)
@@ -354,6 +355,64 @@ Thus we can compute
 \begin{equation}
   \z = \Gamma^\dagger \x_s.
 \end{equation}
+
+\subsection{Application}
+
+Recall that given a function $y(t)$ with Fourier coefficients $\bbrace*{\widehat y_k}_{k=-N_H}^{N_H}$, the Fourier coefficients of $\dot y(t)$ are $\bbrace*{i k \omega \widehat y_k}_{k=-N_H}^{N_H}$.
+If we collect the Fourier coefficients of $y$ into a vector $\widehat \y =
+\begin{bmatrix}
+  \widehat y_{-N_H} & \cdots & \widehat y_{N_H}
+\end{bmatrix}\trp,$
+then using the definition of $\nabla$ \eqref{eq:nabla} we can write the Fourier coefficients of $\dot y$ as
+\begin{align*}
+  \widehat {\dot y}
+  &=
+  \begin{bmatrix}
+    i (-N_H) \omega \widehat y_{-N_H} & \cdots & i N_H \omega \widehat y_{N_H}
+  \end{bmatrix}\trp \\
+  &=
+  \omega \nabla
+  \begin{bmatrix}
+    \widehat y_{-N_H} & \cdots & \widehat y_{N_H}
+  \end{bmatrix}\trp
+\end{align*}
+
+With the Fourier coefficients $\z =
+\begin{bmatrix}
+  \ab_{-N_H} & \cdots & \ab_{N_H}
+\end{bmatrix}$
+for the multiple-degree of freedom system $\x(t) \in \R^n$, we can write the Fourier coefficients for $\dot \x(t)$ as
+\begin{align*}
+  (\omega \nabla \otimes I_n) \z
+  &= \omega
+  \begin{bmatrix}
+    i (-N_H) I_n & \\
+    & i (-N_H + 1) I_n & \\
+    & & \ddots & \\
+    & & & i N_H I_n
+  \end{bmatrix}
+  \begin{bmatrix}
+    \ab_{-N_H} \\
+    \ab_{-N_H + 1} \\
+    \vdots \\
+    \ab_{N_H}
+  \end{bmatrix} \\
+  &= \omega
+  \begin{bmatrix}
+    i (-N_H) \ab_{-N_H} & \\
+    & i (-N_H + 1) \ab_{-N_H + 1} & \\
+    & & \ddots & \\
+    & & & i N_H \ab_{N_H}
+  \end{bmatrix}.
+\end{align*}
+Now we can write
+\begin{align}
+  \nonumber
+  \x_s &= \Gamma \z \\
+  \dot \x_s &= \omega \Gamma (\nabla \otimes I_n) \z \\
+  \ddot \x_s &= \omega^2 \Gamma (\nabla^2 \otimes I_n) \z.
+\end{align}
+Compare with \eqref{eq:x(z)}, \eqref{eq:xp(z)}, \eqref{eq:xpp(z)}.
 
 \section{It's gettin' real}
 
