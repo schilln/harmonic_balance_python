@@ -337,7 +337,7 @@ Then
   \begin{bmatrix}
     I_n \otimes \q(-N_H) & \cdots & I_n \q(N_H)
   \end{bmatrix} \\
-  &=
+  &= \frac1N
   \begin{bmatrix}
     I_n \otimes \bbrack*{\q(-N_H)^* \q(-N_H)} &
     I_n \otimes \bbrack*{\q(-N_H)^* \q(-N_H + 1)} &
@@ -354,12 +354,12 @@ Then
   \end{bmatrix} \\
   &\approx
   \begin{bmatrix}
-    \delta_{-N_H, -N_H} & \delta_{-N_H, -N_H + 1} & \cdots & \delta_{-N_H, N_H} \\
-    \delta_{-N_H + 1, -N_H} & \delta_{-N_H + 1, -N_H + 1} & \cdots & \delta_{-N_H + 1, N_H} \\
+    I_n \otimes \delta_{-N_H, -N_H} & I_n \otimes \delta_{-N_H, -N_H + 1} & \cdots & I_n \otimes \delta_{-N_H, N_H} \\
+    I_n \otimes \delta_{-N_H + 1, -N_H} & I_n \otimes \delta_{-N_H + 1, -N_H + 1} & \cdots & I_n \otimes \delta_{-N_H + 1, N_H} \\
     \vdots & & \ddots & \\
-    \delta_{N_H, -N_H} & \delta_{N_H, -N_H + 1} & \cdots & \delta_{N_H, N_H}
+    I_n \otimes \delta_{N_H, -N_H} & I_n \otimes \delta_{N_H, -N_H + 1} & \cdots & I_n \otimes \delta_{N_H, N_H}
   \end{bmatrix} \\
-  &= I_{2 N_H + 1}.
+  &= I_{(2 N_H + 1) n}.
 \end{align*}
 Thus we can compute
 \begin{equation}
