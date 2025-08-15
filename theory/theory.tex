@@ -419,6 +419,18 @@ Now we can write
 \end{align}
 Compare with \eqref{eq:x(z)}, \eqref{eq:xp(z)}, \eqref{eq:xpp(z)}.
 
+Importantly, we can now compute the Fourier coefficients of the nonlinear force $\f\ts{nl}(\x, \dot \x)$:
+\begin{align}
+  \label{eq:b_nl-aft}
+  \bb\ts{nl}(\z)
+  = \Gamma^\dagger \f\ts{nl} \big(
+    \x_s,\; \dot \x_s
+  \big)
+  = \Gamma^\dagger \f\ts{nl} \big(
+    \Gamma \z,\; \omega \Gamma (\nabla \otimes I_n) \z
+  \big).
+\end{align}
+
 \section{It's getting real}
 
 Since $\x$ is real, we know $\ab_{-k} = \conj{\ab_k}$ and $\exp\paren{-i k \omega t} = \conj{\exp\paren{i k \omega t}}$, so we can write
