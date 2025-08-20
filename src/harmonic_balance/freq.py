@@ -137,9 +137,9 @@ def get_b_ext(
     -------
     b_ext
         Frequency coefficients of external force
-        shape (n * (NH + 1),)
+        shape (n * (2 NH + 1),)
 
-        b_ext = [c0, c1, ..., cNH]
+        b_ext = [c_{-NH}, ..., c_{-1}, c0, c1, ..., cNH]
         ck = [c_k0, c_k1, ..., c_k(n-1)]
         c_ki is the frequency coefficient for the kth harmonic of the ith degree
             of freedom
@@ -187,11 +187,14 @@ def get_b_ext(
     exp_coefficients[k_neq_0_mask & ~is_cosines] *= -1j
     exp_coefficients[k_neq_0_mask] /= 2
 
-    total_length = n * (NH + 1)
-    indices = n * ks + dofs
+    total_length = n * (2 * NH + 1)
+    indices = n * ks
+
+    all_coefficients = np.concat((exp_coefficients.conj(), exp_coefficients))
+    all_indices = np.concat((n * NH - indices + dofs, n * NH + indices + dofs))
 
     return sparse.csr_array(
-        (exp_coefficients, (indices,)),
+        (all_coefficients, (all_indices,)),
         shape=(total_length,),
         dtype=complex,
     )

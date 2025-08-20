@@ -26,7 +26,7 @@ def get_gamma(omega: float, NH: int, n: int, N: int) -> sparray:
     gamma
         Array that computes a time signal via right multiplication with a
         frequency signal
-        shape (n * N, n * (NH + 1))
+        shape (n * N, n * (2 NH + 1))
     """
     return sparse.hstack(
         [_col(n, samples) for samples in _get_gamma_samples(omega, NH, N)],
@@ -53,7 +53,7 @@ def get_inv_gamma(omega: float, NH: int, n: int, N: int) -> sparray:
     inv_gamma
         Array that computes a frequency signal via right multiplication with a
         time signal
-        shape (n * (NH + 1), n * N)
+        shape (n * (2 NH + 1), n * N)
     """
     return sparse.vstack(
         [_row(n, samples) for samples in _get_inv_gamma_samples(omega, NH, N)],
@@ -70,12 +70,12 @@ def time_from_freq(n: int, gamma: sparray, freq: sparray) -> sparray:
         Number of degrees of freedom
     gamma
         Inverse Fourier transform operator (see `get_gamma`)
-        shape (n * N, n * (NH + 1))
+        shape (n * N, n * (2 NH + 1))
     freq
         Frequency signal
-        shape (n * (NH + 1),)
+        shape (n * (2 NH + 1),)
 
-        freq = [a0, a1, ..., aNH]
+        freq = [a_{-NH}, ..., a_{-1}, a0, a1, ..., aNH]
         ak = [a_k0, a_k1, ..., a_k(n-1)]
         a_ki is the frequency coefficient for the kth harmonic of the ith degree
         of freedom
@@ -91,9 +91,7 @@ def time_from_freq(n: int, gamma: sparray, freq: sparray) -> sparray:
         x_ij is the time signal for the jth sample (in the period) of the ith
         degree of freedom
     """
-    return (
-        gamma[:, :n].real @ freq[:n].real + 2 * (gamma[:, n:] @ freq[n:]).real
-    )
+    return (gamma @ freq).real
 
 
 def freq_from_time(inv_gamma: sparray, time: sparray) -> sparray:
@@ -105,7 +103,7 @@ def freq_from_time(inv_gamma: sparray, time: sparray) -> sparray:
         Number of degrees of freedom
     inv_gamma
         Fourier transform operator (see `get_inv_gamma`)
-        shape (n * (NH + 1), n * N)
+        shape (n * (2 NH + 1), n * N)
     time
         Time signal
         shape (n * N,)
@@ -119,9 +117,9 @@ def freq_from_time(inv_gamma: sparray, time: sparray) -> sparray:
     -------
     freq
         Frequency signal
-        shape (n * (NH + 1),)
+        shape (n * (2 NH + 1),)
 
-        freq = [a0, a1, ..., aNH]
+        freq = [a_{-NH}, ..., a_{-1}, a0, a1, ..., aNH]
         ak = [a_k0, a_k1, ..., a_k(n-1)]
         a_ki is the frequency coefficient for the kth harmonic of the ith degree
         of freedom
@@ -135,12 +133,12 @@ def _get_tls(omega: float, N: int) -> ndarray:
 
 def _get_gamma_samples(omega: float, NH: int, N: int) -> list[ndarray]:
     tls = _get_tls(omega, N)
-    return [np.exp(1j * k * omega * tls) for k in range(NH + 1)]
+    return [np.exp(1j * k * omega * tls) for k in range(-NH, NH + 1)]
 
 
 def _get_inv_gamma_samples(omega: float, NH: int, N: int) -> list[ndarray]:
     tls = _get_tls(omega, N)
-    return [np.exp(-1j * k * omega * tls) / N for k in range(NH + 1)]
+    return [np.exp(-1j * k * omega * tls) / N for k in range(-NH, NH + 1)]
 
 
 def _col(n: int, samples: ndarray) -> sparray:
