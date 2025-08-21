@@ -4,6 +4,7 @@
 \usepackage{style/style}
 
 \usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
 
 \begin{document}
 
@@ -13,7 +14,7 @@ We implement the method of harmonic balance using exponential periodic basis fun
 
 Assume the state $\x(t): \R \rightarrow \R^n$ is governed by
 \begin{align}
-  M \ddot \x + C \dot \x + K \x + \f\ts{nl}(\x, \dot \x) = \f\ts{ext}(\omega, t).
+  M \ddot \x + C \dot \x + K \x + \f\ts{nl}(\x, \dot \x) = \f\ts{ext}(t, \omega).
   \label{eq:system-time}
 \end{align}
 Note that $n$ is the number of degrees of freedom;
@@ -22,15 +23,15 @@ $\f\ts{nl}$ is the internal, potentially nonlinear force;
 $\f\ts{ext}$ is the external force;
 and $\omega$ is the fundamental frequency of the external force.
 
-Then $x$ is periodic with period $2 \pi / \omega$, so we can estimate it as a finite sum of exponential periodic basis functions:
+Then $\x$ is periodic with period $2 \pi / \omega$, so we can estimate it as a finite sum of exponential periodic basis functions:
 \begin{align}
-  \x(t) \approx \sum_{k=-N_H}^{N_H} \ab_k \exp\paren{i k \omega t}.
+  \x(t, \omega) \approx \sum_{k=-N_H}^{N_H} \ab_k \exp\paren{i k \omega t}.
 \end{align}
 We can write the forces similarly:
 \begin{align}
-  \f\ts{nl}(\x, \dot \x)
+  \f\ts{nl}(\x, \dot \x, \omega)
   &\approx \sum_{k=-N_H}^{N_H} \cb_k \exp\paren{i k \omega t} \\
-  \f\ts{ext}(t)
+  \f\ts{ext}(t, \omega)
   &\approx \sum_{k=-N_H}^{N_H} \db_k \exp\paren{i k \omega t}.
 \end{align}
 
@@ -38,7 +39,7 @@ We can write the forces similarly:
 
 Collect the Fourier coefficients:
 \begin{align}
-  \z &\coloneq
+  \z(\omega) &\coloneq
   \begin{bmatrix}
     \ab_{-N_H}\trp & \cdots & \ab_{-1}\trp &
     \ab_0\trp & \ab_1\trp & \cdots & \ab_{N_H}\trp
@@ -48,17 +49,17 @@ Collect the Fourier coefficients:
     \cb_{-N_H}\trp & \cdots & \cb_{-1}\trp &
     \cb_0\trp & \cb_1\trp & \cdots & \cb_{N_H}\trp
   \end{bmatrix}\trp \\
-  \bb\ts{ext} &\coloneq
+  \bb\ts{ext}(\omega) &\coloneq
   \begin{bmatrix}
     \db_{-N_H}\trp & \cdots & \db_{-1}\trp &
     \db_0\trp & \db_1\trp & \cdots & \db_{N_H}\trp
   \end{bmatrix}\trp.
 \end{align}
-Also let $\bb(\z) = \bb\ts{ext} - \bb\ts{nl}(\z)$ denote the Fourier coefficients of the force $\f(t, \x, \dot \x) = \f\ts{ext}(t) - \f\ts{nl}(\x, \dot \x)$.
+Also let $\bb(\z, \omega) = \bb\ts{ext}(\omega) - \bb\ts{nl}(\z)$ denote the Fourier coefficients of the force $\f(t, \x, \dot \x, \omega) = \f\ts{ext}(t, \omega) - \f\ts{nl}(\x, \dot \x, \omega)$.
 
 Collect the exponential periodic basis functions
 \begin{align}
-  Q(t) \coloneq
+  Q(t, \omega) \coloneq
   \begin{bmatrix}
     e^{-i N_H \omega t} & \cdots & e^{-i \omega t} & 1 &
     e^{i \omega t} & \cdots & e^{i N_H \omega t}
@@ -66,19 +67,19 @@ Collect the exponential periodic basis functions
 \end{align}
 so that
 \begin{align}
-  \x(t)
-  &= (Q(t) \otimes I_n) \z \\
-  \f\ts{nl}(\x, \dot \x)
-  &= (Q(t) \otimes I_n) \bb\ts{nl} \\
-  \f\ts{ext}(t)
-  &= (Q(t) \otimes I_n) \bb\ts{ext} \\
-  \f(t, \x, \dot \x)
-  &= (Q(t) \otimes I_n) \bb(\z)
+  \x(t, \omega)
+  &= (Q(t, \omega) \otimes I_n) \z(\omega) \\
+  \f\ts{nl}(\x, \dot \x, \omega)
+  &= (Q(t, \omega) \otimes I_n) \bb\ts{nl}(\z) \\
+  \f\ts{ext}(t, \omega)
+  &= (Q(t, \omega) \otimes I_n) \bb\ts{ext}(\omega) \\
+  \f(t, \x, \dot \x, \omega)
+  &= (Q(t, \omega) \otimes I_n) \bb(\z, \omega)
 \end{align}
 where $\otimes$ denotes the Kronecker product.
 Expanding the Kronecker product to make sure we're not pulling our own leg,
 \begin{gather*}
-  (Q(t) \otimes I_n) \\
+  (Q(t, \omega) \otimes I_n) \\
   =
   \begin{bmatrix}
     e^{-i N_H \omega t} I_n & \cdots & e^{-i \omega t} I_n & I_n &
@@ -87,7 +88,7 @@ Expanding the Kronecker product to make sure we're not pulling our own leg,
 \end{gather*}
 so
 \begin{gather*}
-  (Q(t) \otimes I_n) \z \\
+  (Q(t, \omega) \otimes I_n) \z(\omega) \\
   =
   \begin{bmatrix}
     e^{-i N_H \omega t} I_n & \cdots & e^{-i \omega t} I_n & I_n &
@@ -97,7 +98,7 @@ so
     \ab_{-N_H} \\ \vdots \\ \ab_{-1} \\
     \ab_0 \\ \ab_1 \\ \vdots \\ \ab_{N_H}
   \end{bmatrix} \\
-  = \x(t).
+  = \x(t, \omega).
 \end{gather*}
 
 \subsection{Differentiating}
@@ -105,10 +106,10 @@ so
 Suppose we want to write the Fourier series for $\dot \x$?
 Observe,
 \begin{align*}
-  \dot \x(t)
-  &= \frac d{dt} \x
-  = \frac d{dt} (Q(t) \otimes I_n) \z \\
-  &= \paren*{\dot Q(t) \otimes I_n} \z.
+  \dot \x(t, \omega)
+  &= \frac d{dt} \x(t, \omega)
+  = \frac d{dt} (Q(t, \omega) \otimes I_n) \z(\omega) \\
+  &= \paren*{\dot Q(t, \omega) \otimes I_n} \z(\omega).
 \end{align*}
 Letting
 \begin{align}
@@ -122,35 +123,63 @@ Letting
 \end{align}
 we find that
 \begin{align*}
-  \dot Q(t)
+  \dot Q(t, \omega)
   &=
   \omega
   \begin{bmatrix}
     -i N_H e^{-i N_H \omega t} & \cdots & -i e^{-i \omega t} & 0 &
     i e^{i \omega t} & \cdots & i N_H e^{i N_H \omega t}
   \end{bmatrix} \\
-  &= \omega Q(t) \odot \widetilde \nabla \\
-  &= \omega Q(t) \nabla.
+  &= \omega Q(t, \omega) \odot \widetilde \nabla \\
+  &= \omega Q(t, \omega) \nabla.
 \end{align*}
 Likewise,
 \begin{align*}
-  \ddot Q(t)
-  &= \omega^2 Q(t) \nabla^2.
+  \ddot Q(t, \omega)
+  &= \omega^2 Q(t, \omega) \nabla^2.
 \end{align*}
 This yields the identities
 \begin{align}
   \label{eq:x(z)}
-  \x(t) &= \paren{Q(t) \otimes I_n} \z \\
+  \x(t, \omega) &= \paren{Q(t, \omega) \otimes I_n} \z(\omega) \\
   \label{eq:xp(z)}
-  \dot \x(t) &= \omega \paren{Q(t) \nabla \otimes I_n} \z \\
+  \dot \x(t, \omega) &= \omega \paren{Q(t, \omega) \nabla \otimes I_n} \z(\omega) \\
   \label{eq:xpp(z)}
-  \ddot \x(t) &= \omega^2 \paren*{Q(t) \nabla^2 \otimes I_n} \z.
+  \ddot \x(t, \omega) &= \omega^2 \paren*{Q(t, \omega) \nabla^2 \otimes I_n} \z(\omega).
 \end{align}
 
 \subsection{Performing the projection}
 
-We project the system equation from the time domain \eqref{eq:system-time} to the frequency domain via Fourier--Galerkin projection (I think).
-First, define the inner product on functions $f: \R \rightarrow \C$:
+First, we rewrite \eqref{eq:system-time} using \eqref{eq:x(z)}, \eqref{eq:xp(z)}, and \eqref{eq:xpp(z)}, beginning with the first and using the mixed-product property of the Kronecker product:
+\begin{align}
+  \nonumber
+  &\phantom{{}={}} M \ddot \x \\
+  \nonumber
+  &= M \omega^2 \paren*{Q \nabla^2 \otimes I_n} \z \\
+  \nonumber
+  &= \omega^2 (1 \otimes M) \paren*{Q \nabla^2 \otimes I_n} \z \\
+  \nonumber
+  &= \omega^2 \bbrack*{\paren*{1 Q \nabla^2} \otimes (M I_n)} \z \\
+  &= \omega^2 \bbrack*{\paren*{Q \nabla^2} \otimes M} \z.
+\end{align}
+The same computations show
+\begin{align}
+  C \dot \x &= \omega \bbrack*{\paren*{Q \nabla} \otimes C} \z \\
+  K \x &= \bbrack*{Q \otimes K} \z.
+\end{align}
+Now the system equation \eqref{eq:system-time} becomes (suppressing $Q$'s dependence on $\omega$)
+\begin{align}
+  \label{eq:system-time-kron}
+  \bbrack*{
+    \omega^2 \paren*{Q(t) \nabla^2} \otimes M
+    + \omega \paren*{Q(t) \nabla} \otimes C
+    + Q(t) \otimes K
+  }\z(\omega)
+  = (Q(t) \otimes I_n) \bb(\z).
+\end{align}
+
+Next, we project the system equation from the time domain \eqref{eq:system-time} to the frequency domain via Fourier--Galerkin projection (I think).
+Define the inner product on functions $f: [0, 2 \pi / \omega] \rightarrow \C$:
 \begin{align}
   \inpr{f, g} \coloneq \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \conj{f(t)} g(t) dt.
 \end{align}
@@ -160,7 +189,7 @@ Then
   &\phantom{{}={}} \frac \omega{2 \pi} \paren*{\int_0^{2 \pi / \omega} Q(t)^* Q(t) dt}_{\hat k \hat \ell} \\
   &= \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \paren*{Q(t)^* Q(t)}_{\hat k \hat \ell} dt \\
   &= \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \exp\paren{-i k \omega t} \exp\paren{i \ell \omega t} dt \\
-  &= \inpr{\exp\paren{-i k \omega t},\; \exp\paren{i \ell \omega t}} \\
+  &= \inpr{\exp\paren{i k \omega t},\; \exp\paren{i \ell \omega t}} \\
   &= \delta_{k \ell}
 \end{align*}
 since the basis functions are orthonormal in this inner product.
@@ -169,39 +198,27 @@ Then
   \frac \omega{2 \pi} \paren*{\int_0^{2 \pi / \omega} Q(t)^* Q(t) dt}
   = I_{2 N_H + 1}.
 \end{align*}
-
-Next, we'll rewrite \eqref{eq:system-time} using \eqref{eq:x(z)}, \eqref{eq:xp(z)}, and \eqref{eq:xpp(z)}, beginning with the first and using the mixed-product property of the Kronecker product:
-\begin{align}
-  \nonumber
-  &\phantom{{}={}} M \ddot \x \\
-  \nonumber
-  &= M \omega^2 \paren*{Q(t) \nabla^2 \otimes I_n} \z \\
-  \nonumber
-  &= \omega^2 (1 \otimes M) \paren*{Q(t) \nabla^2 \otimes I_n} \z \\
-  \nonumber
-  &= \omega^2 \bbrack*{\paren*{1 Q(t) \nabla^2} \otimes (M I_n)} \z \\
-  &= \omega^2 \bbrack*{\paren*{Q(t) \nabla^2} \otimes M} \z.
-\end{align}
-The same computations show
-\begin{align}
-  C \dot \x &= \omega \bbrack*{\paren*{Q(t) \nabla} \otimes C} \z \\
-  K \x &= \bbrack*{Q(t) \otimes K} \z.
-\end{align}
-Now the system equation \eqref{eq:system-time} becomes
-\begin{align}
-  \label{eq:system-time-kron}
-  \bbrack*{
-    \omega^2 \paren*{Q(t) \nabla^2} \otimes M
-    + \omega \paren*{Q(t) \nabla} \otimes C
-    + Q(t) \otimes K
-  }\z
-  = (Q(t) \otimes I_n) \bb(\z).
-\end{align}
-Now we integrate against $Q(t)^*$ to obtain an algebraic system of equations in the frequency domain:
+Now we integrate \eqref{eq:system-time-kron} against $Q(t)^*$ to obtain an algebraic system of equations in the frequency domain:
 \begin{align*}
-  &\phantom{{}={}} \frac \omega{2 \pi} \int_0^{2 \pi / \omega} Q(t)^* \omega^2 \paren*{Q(t) \nabla^2} \otimes M \, dt \\
-  &= \frac \omega{2 \pi} \int_0^{2 \pi / \omega} Q(t)^* Q(t) \, dt \; \omega^2 \nabla^2 \otimes M \\
-  &= I_{2 N_H + 1} \; \omega^2 \nabla^2 \otimes M \\
+  &\phantom{{}={}} \frac \omega{2 \pi} \int_0^{2 \pi / \omega} Q(t)^* \big[
+    \omega^2 \paren*{Q(t) \nabla^2} \otimes M
+  \big] \, dt \\
+  &= \omega^2 \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \big[
+    Q(t)^* \otimes 1
+  \big] \big[
+    \paren*{Q(t) \nabla^2} \otimes M
+  \big] \, dt \\
+  &= \omega^2 \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \big[
+    Q(t)^* \paren*{Q(t) \nabla^2}
+  \big] \otimes \big[
+    1 M
+  \big] \, dt \\
+  &= \omega^2 \bbrack*{
+    \frac \omega{2 \pi}
+    \int_0^{2 \pi / \omega}
+    Q(t)^* Q(t) \, dt \; \nabla^2
+  } \otimes M \\
+  &=  \omega^2 \big[ I_{2 N_H + 1} \; \nabla^2 \big] \otimes M \\
   &= \omega^2 \nabla^2 \otimes M.
 \end{align*}
 Following the same process for the other terms in \eqref{eq:system-time-kron}, we at last obtain
@@ -222,7 +239,7 @@ and define $A(\omega) \coloneq \bbrack*{
 \section{Computing the nonlinear force}
 
 How do we compute the Fourier coefficients of the nonlinear force, $\bb(\z)$?
-One method is the alternating frequency/time method (AFT), in which take the frequency domain solution $\z$, send it to the time domain to obtain $\x$ and $\dot \x$, pass these through the nonlinear force to obtain $\f\ts{nl}(\x, \dot \x)$, and finally send this back to the frequency domain to obtain $\bb\ts{nl}$.
+One method is the alternating frequency/time method (AFT), in which we take the frequency domain solution $\z$, send it to the time domain to obtain $\x$ and $\dot \x$, pass these through the nonlinear force to obtain $\f\ts{nl}(\x, \dot \x)$, and finally send this back to the frequency domain to obtain $\bb\ts{nl}$.
 
 We also use a fancy technique called trigonometric collocation in which we construct discrete Fourier transform (DFT) matrices using extra time samples DFT so that we can capture information from higher frequencies resulting from the nonlinearity.
 (For example, consider passing $e^{i \omega t}$ through a cubic nonlinearity $y \mapsto y^3$, yielding $e^{i 3 \omega t}$.)
@@ -230,6 +247,7 @@ We also use a fancy technique called trigonometric collocation in which we const
 \subsection{Computing time from frequency}
 
 Assume we use $N$ samples evenly spaced in one period, $t_j = \frac{2 \pi}\omega \frac jN$, $j = 0, 1, \ldots, N - 1$.
+Define
 \begin{align}
   \q(k)
   &\coloneq
@@ -405,7 +423,7 @@ Next observe that
   &= \frac1N \sum_{j=0}^{N-1} e^{-i k \omega t_j} e^{i \ell \omega t_j} \\
   &\approx \frac \omega{2 \pi} \int_0^{2 \pi / \omega}
   e^{-i k \omega t} e^{i \ell \omega t} \, dt \\
-  &= \inpr{e^{-i k \omega t},\; e^{i \ell \omega t}} \\
+  &= \inpr{e^{i k \omega t},\; e^{i \ell \omega t}} \\
   &= \delta_{k \ell}.
 \end{align*}
 Then
@@ -413,9 +431,9 @@ Then
   &\phantom{{}={}} \Gamma^\dagger \Gamma \\
   &= \frac1N
   \begin{bmatrix}
-    I_n \otimes \q(-N_H)\trp \\
+    I_n \otimes \q(-N_H)^* \\
     \vdots \\
-    I_n \otimes \q(N_H)\trp
+    I_n \otimes \q(N_H)^*
   \end{bmatrix}
   \begin{bmatrix}
     I_n \otimes \q(-N_H) & \cdots & I_n \q(N_H)
@@ -454,7 +472,7 @@ If we collect the Fourier coefficients of $y$ into a vector $\widehat \y =
 \end{bmatrix}\trp,$
 then using the definition of $\nabla$ \eqref{eq:nabla} we can write the Fourier coefficients of $\dot y$ as
 \begin{align*}
-  \widehat {\dot y}
+  \widehat {\dot \y}
   &=
   \begin{bmatrix}
     i (-N_H) \omega \widehat y_{-N_H} & \cdots & i N_H \omega \widehat y_{N_H}
@@ -549,8 +567,8 @@ Then using \eqref{eq:x_s}, \eqref{eq:xp_s}, and \eqref{eq:b_nl-aft},
     \f\ts{nl} \paren{\x_s,\; \dot \x_s}
   \bigg] \\
   &= \Gamma^\dagger \bigg[
-    \frac d{d \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \frac {d \x}{d \z}
-    + \frac d{d \dot \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \frac {d \dot \x}{d \z}
+    \frac d{d \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \frac {d \x_s}{d \z}
+    + \frac d{d \dot \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \frac {d \dot \x_s}{d \z}
   \bigg] \\
   &= \Gamma^\dagger \bigg[
     \frac d{d \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \Gamma
