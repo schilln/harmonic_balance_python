@@ -220,7 +220,7 @@ def _get_block(
         kth diagonal block of frequency-domain linear dynamics matrix A
         shape (n, n)
     """
-    return -(k * omega)**2 * M + 1j * k * omega * C + K
+    return -((k * omega) ** 2) * M + 1j * k * omega * C + K
 
 
 def get_nabla_vector(omega: float, NH: int, exponent: int = 1):
