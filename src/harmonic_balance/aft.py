@@ -3,6 +3,8 @@
 import numpy as np
 from scipy import sparse
 
+from . import utils
+
 ndarray = np.ndarray
 sparray = sparse.sparray
 
@@ -91,9 +93,7 @@ def time_from_freq(n: int, gamma: sparray, freq: sparray) -> sparray:
         x_ij is the time signal for the jth sample (in the period) of the ith
         degree of freedom
     """
-    return (
-        gamma[:, :n].real @ freq[:n].real + 2 * (gamma[:, n:] @ freq[n:]).real
-    )
+    return 2 * (gamma @ utils.get_hat(freq, n)).real
 
 
 def freq_from_time(inv_gamma: sparray, time: sparray) -> sparray:

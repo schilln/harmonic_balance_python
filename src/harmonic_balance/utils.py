@@ -7,6 +7,31 @@ ndarray = np.ndarray
 sparray = sparse.sparray
 
 
+def get_hat(coefficients: sparray | ndarray, n: int) -> sparray | ndarray:
+    """Return 'hat' coefficients, i.e., the coefficients of the 0th harmonic are
+    divided by two.
+
+    Parameters
+    ----------
+    coefficients
+        Should be of the form [a0, a1, ..., aNH] where ak denotes the
+        coefficients of the kth harmonic for the n degrees of freedom.
+        shape (n * (NH + 1),)
+    n
+        Number of degrees of freedom
+
+    Returns
+    -------
+    coefficients_hat
+        [a0 / 2, a1, a2, ..., aNH]
+        shape (n * (NH + 1),)
+    """
+    return (
+        np.concat((np.full(n, 1 / 2), np.ones(coefficients.shape[0] - n)))
+        * coefficients
+    )
+
+
 def extract_dofs_freq(
     coefficients: ndarray | sparray, n: int
 ) -> ndarray | sparray:
@@ -17,6 +42,7 @@ def extract_dofs_freq(
     coefficients
         Should be of the form [a0, a1, ..., aNH] where ak denotes the
         coefficients of the kth harmonic for the n degrees of freedom.
+        shape (n * (NH + 1),)
     n
         Number of degrees of freedom
 
