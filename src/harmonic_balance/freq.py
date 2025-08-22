@@ -63,7 +63,7 @@ def get_derivative(
         Order-th time derivative of coefficients in frequency domain
         shape (n * (NH + 1),)
     """
-    factors = np.repeat(get_nabla_vector(omega, NH, order), n)
+    factors = np.repeat(omega**order * get_nabla_vector(NH, order), n)
     return factors * coefficients
 
 
@@ -223,9 +223,9 @@ def _get_block(
     return -((k * omega) ** 2) * M + 1j * k * omega * C + K
 
 
-def get_nabla_vector(omega: float, NH: int, exponent: int = 1):
-    return (1j * omega * np.arange(NH + 1)) ** exponent
+def get_nabla_vector(NH: int, exponent: int = 1):
+    return (1j * np.arange(NH + 1)) ** exponent
 
 
-def get_nabla(omega: float, NH: int, exponent: int = 1):
-    return sparse.diags_array(get_nabla_vector(omega, NH, exponent))
+def get_nabla(NH: int, exponent: int = 1):
+    return sparse.diags_array(get_nabla_vector(NH, exponent))
