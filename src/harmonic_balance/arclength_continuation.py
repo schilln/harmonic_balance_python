@@ -27,9 +27,9 @@ def get_R(
     x = aft.time_from_freq(n, gamma, z)
     xp = aft.time_from_freq(n, gamma, zp)
     fx = f_nl(x, xp, N)
-    b = aft.freq_from_time(aft.get_inv_gamma(omega, NH, n, N), fx)
+    b_nl = aft.freq_from_time(aft.get_inv_gamma(omega, NH, n, N), fx)
 
-    return A @ z + b - b_ext
+    return A @ z + b_nl - b_ext
 
 
 def get_dR_dz(
