@@ -744,9 +744,24 @@ Similarly, defining
 \end{align}
 leads to
 \begin{align*}
-  \wh \Gamma \x_s &= \z.
+  \wh \Gamma^\dagger \x_s &= \z.
 \end{align*}
 Note this is $\z$, \textit{not} $\wh \z$.
+For $\wh \z$, we compute
+\begin{align*}
+  &\phantom{{}={}}
+  \diag(1/2, 1, \ldots, 1)
+  \wh \Gamma^\dagger \x_s \\
+  &=
+  \begin{bmatrix}
+    1/2 & 1 & \cdots & 1
+  \end{bmatrix}\trp \odot \paren*{\wh \Gamma^\dagger \x_s} \\
+  &=
+  \begin{bmatrix}
+    1/2 & 1 & \cdots & 1
+  \end{bmatrix}\trp \odot \z \\
+  &= \wh \z.
+\end{align*}
 We then can write
 \begin{align}
   \label{eq:x_s-real}
@@ -754,6 +769,21 @@ We then can write
   \label{eq:xp_s-real}
   \dot \x_s &= \omega \wh \Gamma (\wh \nabla \otimes I_n) \paren*{\wh \z + \overline {\wh \z}} \\
   \ddot \x_s &= \omega^2 \wh \Gamma (\wh \nabla^2 \otimes I_n) \paren*{\wh \z + \overline {\wh \z}}.
+\end{align}
+Additionally, we have
+\begin{align}
+  \nonumber
+  \wh \bb\ts{nl}(\z)
+  &= \diag(1/2, 1, \ldots, 1) \;
+  \Gamma^\dagger \; \f\ts{nl} \big(
+    \x_s,\; \dot \x_s
+  \big) \\
+  \label{eq:b_nl-aft-real}
+  &= \diag(1/2, 1, \ldots, 1) \;
+  \Gamma^\dagger \; \f\ts{nl} \; \paren*{
+    \Gamma \paren*{\wh \z + \overline {\wh \z}},\;
+    \omega \Gamma (\nabla \otimes I_n) \paren*{\wh \z + \overline {\wh \z}}
+  }.
 \end{align}
 
 \end{document}
