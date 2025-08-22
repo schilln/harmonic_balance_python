@@ -707,29 +707,32 @@ and we define $\wh A(\omega) \coloneq \bbrack*{
 
 \subsection{Computing the nonlinear force}
 
-We define
+We reuse
 \begin{align}
-  \wh \q(k)
+  \q(k)
   &\coloneq
   \begin{bmatrix}
     e^{i k \omega t_0} \\
     e^{i k \omega t_1} \\
     \vdots \\
     e^{i k \omega t_{N-1}}
-  \end{bmatrix} \\
+  \end{bmatrix}
+\end{align}
+and define
+\begin{align}
   \wh \Gamma
   &\coloneq
   \begin{bmatrix}
-    I_n \otimes \wh \q(0) & I_n \otimes \wh \q(1) & \cdots & I_n \wh \q(N_H)
+    I_n \otimes \q(0) & I_n \otimes \q(1) & \cdots & I_n \q(N_H)
   \end{bmatrix}.
 \end{align}
 Then
 \begin{align*}
   \wh \Gamma \paren*{\wh \z + \overline {\wh \z}}
-  &= (I_n \otimes \wh \q(0))
+  &= (I_n \otimes \q(0))
   \paren*{\wh \ab_{0} + \overline {\wh \ab}_{0}}
   + \cdots
-  + (I_n \otimes \wh \q(N_H))
+  + (I_n \otimes \q(N_H))
   \paren*{\wh \ab_{N_H} + \overline {\wh \ab}_{N_H}} \\
   &= \x_s.
 \end{align*}
