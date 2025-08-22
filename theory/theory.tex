@@ -603,16 +603,17 @@ Alternatively, if we define
 then since $\x$ is real-valued, we know that $\ab_0 \in \R$, and so we can write
 \begin{align*}
   \x(t)
-  &\approx \sum_{k=0}^{N_H} \wh \ab_k \exp\paren{i k \omega t} + \conj{\wh \ab_k \exp\paren{i k \omega t}}.
+  &\approx \sum_{k=0}^{N_H} \wh \ab_k \exp\paren{i k \omega t} + \conj{\wh \ab_k \exp\paren{i k \omega t}} \\
+  &= 2 \sum_{k=0}^{N_H} \Re \bbrack*{\wh \ab_k \exp\paren{i k \omega t}}
 \end{align*}
 We can write the forces similarly:
 \begin{align*}
   \f\ts{nl}(\x, \dot \x)
-  &= \cb_0 + 2 \sum_{k=1}^{N_H} \Re\bbrack{\cb_k \exp\paren{i k \omega t}} \\
-  &= \sum_{k=0}^{N_H} \wh \cb_k \exp\paren{i k \omega t} + \conj{\wh \cb_k \exp\paren{i k \omega t}} \\
+  &= \cb_0 + 2 \sum_{k=1}^{N_H} \Re \bbrack{\cb_k \exp\paren{i k \omega t}} \\
+  &= 2 \sum_{k=0}^{N_H} \Re \bbrack*{\wh \cb_k \exp\paren{i k \omega t}} \\
   \f\ts{ext}(t)
-  &= \db_0 + 2 \sum_{k=1}^{N_H} \Re\bbrack{\db_k \exp\paren{i k \omega t}} \\
-  &= \sum_{k=0}^{N_H} \wh \db_k \exp\paren{i k \omega t} + \conj{\wh \db_k \exp\paren{i k \omega t}}.
+  &= \db_0 + 2 \sum_{k=1}^{N_H} \Re \bbrack{\db_k \exp\paren{i k \omega t}} \\
+  &= 2 \sum_{k=0}^{N_H} \Re \bbrack*{\wh \db_k \exp\paren{i k \omega t}}.
 \end{align*}
 We store the Fourier coefficients
 \begin{align*}
@@ -655,30 +656,34 @@ Then writing
 we have
 \begin{align}
   \x(t, \omega)
-  &= (\wh Q \otimes I_n) \paren*{\wh \z + \overline {\wh \z}} \\
+  &= 2 \Re \bbrack*{(\wh Q \otimes I_n) \wh \z} \\
   \f\ts{nl}(\x, \dot \x, \omega)
-  &= (\wh Q \otimes I_n) \paren*{\wh \bb\ts{nl} + \overline {\wh \bb}\ts{nl}} \\
+  &= 2 \Re \bbrack*{(\wh Q \otimes I_n) \wh \bb\ts{nl}} \\
   \f\ts{ext}(t, \omega)
-  &= (\wh Q \otimes I_n) \paren*{\wh \bb\ts{ext} + \overline {\wh \bb}\ts{ext}} \\
+  &= 2 \Re \bbrack*{(\wh Q \otimes I_n) \wh \bb\ts{ext}} \\
   \f(t, \x, \dot \x, \omega)
-  &= (\wh Q \otimes I_n) \paren*{\wh \bb + \overline {\wh \bb}}.
+  &= 2 \Re \bbrack*{(\wh Q \otimes I_n) \wh \bb}.
 \end{align}
 We also have
 \begin{align}
   \label{eq:xp(z)-real}
-  \dot \x(t, \omega) &= \omega \paren{\wh Q \nabla \otimes I_n} \paren*{\wh \z + \overline {\wh \z}} \\
+  \dot \x(t, \omega) &= 2 \omega \Re \bbrack*{\paren{\wh Q \nabla \otimes I_n} \wh \z} \\
   \label{eq:xpp(hat-z)-real}
-  \ddot \x(t, \omega) &= \omega^2 \paren*{\wh Q \nabla^2 \otimes I_n} \paren*{\wh \z + \overline {\wh \z}}.
+  \ddot \x(t, \omega) &= 2 \omega^2 \Re \bbrack*{\paren*{\wh Q \nabla^2 \otimes I_n} \wh \z}.
 \end{align}
 We arrive at the system
 \begin{align}
   \label{eq:system-time-kron-real}
+  \Re
   \bbrack*{
-    \omega^2 \paren*{\wh Q(t) \wh \nabla^2} \otimes M
-    + \omega \paren*{\wh Q(t) \wh \nabla} \otimes C
-    + \wh Q(t) \otimes K
-  } \paren*{\wh \z + \overline {\wh \z}}
-  = (\wh Q(t) \otimes I_n) \paren*{\wh \bb + \overline {\wh \bb}}.
+    \paren*{
+      \omega^2 \paren*{\wh Q(t) \wh \nabla^2} \otimes M
+      + \omega \paren*{\wh Q(t) \wh \nabla} \otimes C
+      + \wh Q(t) \otimes K
+    } \wh \z
+    - \paren*{\wh Q(t) \otimes I_n} \wh \bb
+  }
+  = 0.
 \end{align}
 Defining
 \begin{align}
@@ -690,20 +695,43 @@ Defining
   \label{eq:nabla-real}
   \wh \nabla &\coloneq \diag{\widetilde {\wh \nabla}},
 \end{align}
-Fourier--Galerkin projection then transforms this equation to
-\begin{align}
+Fourier--Galerkin projection then transforms the argument to the real part operator
+\begin{align*}
   \bbrack*{
     \omega^2 \wh \nabla^2 \otimes M
     + \omega \wh \nabla \otimes C
     + I_{N_H + 1} \otimes K
-  } \paren*{\wh \z + \overline {\wh \z}}
-  = \wh \bb + \overline {\wh \bb}
-\end{align}
-and we define $\wh A(\omega) \coloneq \bbrack*{
+  } \wh \z
+  - \wh \bb
+  = 0.
+\end{align*}
+We define $\wh A(\omega) \coloneq \bbrack*{
   \omega^2 \wh \nabla^2 \otimes M
   + \omega \wh \nabla \otimes C
   + I_{N_H + 1} \otimes K
-}$.
+}$
+and obtain the system
+\begin{align*}
+  \Re
+  \bbrack*{
+    \wh A(\omega)
+    \wh \z
+    - \wh \bb
+  }
+  = 0,
+\end{align*}
+or equivalently,
+\begin{align*}
+  \wh A(\omega)
+  \wh \z
+  - \wh \bb
+  + \overline{
+    \wh A(\omega)
+    \wh \z
+    - \wh \bb
+  }
+  = 0
+\end{align*}
 
 \subsection{Computing the nonlinear force}
 
@@ -728,12 +756,14 @@ and define
 \end{align}
 Then
 \begin{align*}
-  \wh \Gamma \paren*{\wh \z + \overline {\wh \z}}
-  &= (I_n \otimes \q(0))
-  \paren*{\wh \ab_{0} + \overline {\wh \ab}_{0}}
-  + \cdots
-  + (I_n \otimes \q(N_H))
-  \paren*{\wh \ab_{N_H} + \overline {\wh \ab}_{N_H}} \\
+  2 \Re \bbrack*{\wh \Gamma \wh \z}
+  &= 2 \Re \bbrack*{
+    (I_n \otimes \q(0))
+    \wh \ab_{0}
+    + \cdots
+    + (I_n \otimes \q(N_H))
+    \wh \ab_{N_H}
+  } \\
   &= \x_s.
 \end{align*}
 Similarly, defining
@@ -768,10 +798,10 @@ For $\wh \z$, we compute
 We then can write
 \begin{align}
   \label{eq:x_s-real}
-  \x_s &= \wh \Gamma \paren*{\wh \z + \overline {\wh \z}} \\
+  \x_s &= 2 \Re \bbrack*{\wh \Gamma \wh \z} \\
   \label{eq:xp_s-real}
-  \dot \x_s &= \omega \wh \Gamma (\wh \nabla \otimes I_n) \paren*{\wh \z + \overline {\wh \z}} \\
-  \ddot \x_s &= \omega^2 \wh \Gamma (\wh \nabla^2 \otimes I_n) \paren*{\wh \z + \overline {\wh \z}}.
+  \dot \x_s &= 2 \omega \Re \bbrack*{\wh \Gamma (\wh \nabla \otimes I_n) \wh \z} \\
+  \ddot \x_s &= 2 \omega^2 \Re \bbrack*{\wh \Gamma (\wh \nabla^2 \otimes I_n) \wh \z}.
 \end{align}
 Additionally, we have
 \begin{align}
@@ -784,8 +814,8 @@ Additionally, we have
   \label{eq:b_nl-aft-real}
   &= \diag(1/2, 1, \ldots, 1) \;
   \Gamma^\dagger \; \f\ts{nl} \; \paren*{
-    \Gamma \paren*{\wh \z + \overline {\wh \z}},\;
-    \omega \Gamma (\nabla \otimes I_n) \paren*{\wh \z + \overline {\wh \z}}
+    2 \Re \bbrack*{\wh \Gamma \wh \z},\;
+    2 \omega \Re \bbrack*{\wh \Gamma (\wh \nabla \otimes I_n) \wh \z}
   }.
 \end{align}
 
@@ -794,9 +824,15 @@ Additionally, we have
 Define the residual equation
 \begin{align}
   \wh \Rb(\wh \z)
-  &\coloneq \wh A(\omega) \paren*{\wh \z + \overline {\wh \z}}
-  + \paren*{\wh \bb\ts{nl} + \overline {\wh \bb}\ts{nl}}
-  - \paren*{\wh \bb\ts{ext} + \overline {\wh \bb}\ts{ext}}.
+  &\coloneq 2 \Re \bbrack*{\wh A(\omega) \wh \z
+    + \wh \bb\ts{nl}
+  - \wh \bb\ts{ext}} \\
+  &= \wh A(\omega) \wh \z
+  + \wh \bb\ts{nl}
+  - \wh \bb\ts{ext}
+  + \overline{\wh A(\omega) \wh \z
+    + \wh \bb\ts{nl}
+  - \wh \bb\ts{ext}}.
 \end{align}
 We need to compute
 % TODO: Is this differentiation right? And the same question for the nonlinear force...
