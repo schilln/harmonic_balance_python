@@ -150,9 +150,9 @@ def _solve_nonlinear_step(
     step
         The step to add to z to solve the nonlinear system Az + b = b_ext
     """
-    db_dz = alc.get_db_dz(omega, z, df_nl_dx, df_nl_d_xdot, NH, n, N)
+    db_nl_dz = alc.get_db_nl_dz(omega, z, df_nl_dx, df_nl_d_xdot, NH, n, N)
 
     R = alc.get_R(z, omega, A, f_nl, b_ext, NH, n, N)
-    dR_dz = alc.get_dR_dz(A, db_dz)
+    dR_dz = alc.get_dR_dz(A, db_nl_dz)
 
     return np.linalg.solve(dR_dz, -R)

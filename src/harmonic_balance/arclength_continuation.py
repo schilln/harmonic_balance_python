@@ -69,7 +69,7 @@ def get_dR_d_omega(
     ) @ z + get_db_d_omega(omega, z, df_nl_d_xdot, NH, n, N)
 
 
-def get_db_dz(
+def get_db_nl_dz(
     omega: float,
     z: sparray | ndarray,
     df_nl_dx: abc.Callable[[ndarray, ndarray, int], ndarray],
