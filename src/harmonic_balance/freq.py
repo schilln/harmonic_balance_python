@@ -223,9 +223,40 @@ def _get_block(
     return -((k * omega) ** 2) * M + 1j * k * omega * C + K
 
 
-def get_nabla_vector(NH: int, exponent: int = 1):
+def get_nabla_vector(NH: int, exponent: int = 1) -> ndarray:
+    """Get the vector of multiplicative factors resulting from differentiating
+    the periodic exponential functions e^{i k omega t} with respect to time.
+
+    Parameters
+    ----------
+    NH
+        Assumed highest harmonic index
+    exponent
+        Exponent on each term, i.e., the order of the derivative being taken
+
+    Returns
+    -------
+    nabla_vector
+        Vector of factors [0, i, 2i, ..., NH i] ** exponent
+        shape (NH + 1,)
+    """
     return (1j * np.arange(NH + 1)) ** exponent
 
 
-def get_nabla(NH: int, exponent: int = 1):
+def get_nabla(NH: int, exponent: int = 1) -> ndarray:
+    """Return diag(nabla) (see `get_nabla_vector`).
+
+    Parameters
+    ----------
+    NH
+        Assumed highest harmonic index
+    exponent
+        Exponent on each term, i.e., the order of the derivative being taken
+
+    Returns
+    -------
+    nabla
+        Diagonal matrix of factors: diag([0, i, 2i, ..., NH i] ** exponent)
+        shape (NH + 1, NH + 1)
+    """
     return sparse.diags_array(get_nabla_vector(NH, exponent))
