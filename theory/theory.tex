@@ -6,6 +6,8 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{hyperref}
 
+\newcommand{\wh}{\widehat}
+
 \begin{document}
 
 \section{Introduction}
@@ -465,22 +467,22 @@ Then
 
 \subsection{Application}
 
-Recall that given a function $y(t)$ with Fourier coefficients $\bbrace*{\widehat y_k}_{k=-N_H}^{N_H}$, the Fourier coefficients of $\dot y(t)$ are $\bbrace*{i k \omega \widehat y_k}_{k=-N_H}^{N_H}$.
-If we collect the Fourier coefficients of $y$ into a vector $\widehat \y =
+Recall that given a function $y(t)$ with Fourier coefficients $\bbrace*{\wh y_k}_{k=-N_H}^{N_H}$, the Fourier coefficients of $\dot y(t)$ are $\bbrace*{i k \omega \wh y_k}_{k=-N_H}^{N_H}$.
+If we collect the Fourier coefficients of $y$ into a vector $\wh \y =
 \begin{bmatrix}
-  \widehat y_{-N_H} & \cdots & \widehat y_{N_H}
+  \wh y_{-N_H} & \cdots & \wh y_{N_H}
 \end{bmatrix}\trp,$
 then using the definition of $\nabla$ \eqref{eq:nabla} we can write the Fourier coefficients of $\dot y$ as
 \begin{align*}
-  \widehat {\dot \y}
+  \wh {\dot \y}
   &=
   \begin{bmatrix}
-    i (-N_H) \omega \widehat y_{-N_H} & \cdots & i N_H \omega \widehat y_{N_H}
+    i (-N_H) \omega \wh y_{-N_H} & \cdots & i N_H \omega \wh y_{N_H}
   \end{bmatrix}\trp \\
   &=
   \omega \nabla
   \begin{bmatrix}
-    \widehat y_{-N_H} & \cdots & \widehat y_{N_H}
+    \wh y_{-N_H} & \cdots & \wh y_{N_H}
   \end{bmatrix}\trp
 \end{align*}
 
@@ -592,7 +594,7 @@ Since $\x$ is real, we know $\ab_{-k} = \conj{\ab_k}$ and $\exp\paren{-i k \omeg
 \end{align*}
 Alternatively, if we define
 \begin{align*}
-  \widehat \ab_k \coloneq
+  \wh \ab_k \coloneq
   \begin{cases}
     \ab_k / 2 & k = 0, \\
     \ab_k & k \ne 0,
@@ -601,51 +603,51 @@ Alternatively, if we define
 then since $\x$ is real-valued, we know that $\ab_0 \in \R$, and so we can write
 \begin{align*}
   \x(t)
-  &\approx \sum_{k=0}^{N_H} \widehat \ab_k \exp\paren{i k \omega t} + \conj{\widehat \ab_k \exp\paren{i k \omega t}}.
+  &\approx \sum_{k=0}^{N_H} \wh \ab_k \exp\paren{i k \omega t} + \conj{\wh \ab_k \exp\paren{i k \omega t}}.
 \end{align*}
 We can write the forces similarly:
 \begin{align*}
   \f\ts{nl}(\x, \dot \x)
   &= \cb_0 + 2 \sum_{k=1}^{N_H} \Re\bbrack{\cb_k \exp\paren{i k \omega t}} \\
-  &= \sum_{k=0}^{N_H} \widehat \cb_k \exp\paren{i k \omega t} + \conj{\widehat \cb_k \exp\paren{i k \omega t}} \\
+  &= \sum_{k=0}^{N_H} \wh \cb_k \exp\paren{i k \omega t} + \conj{\wh \cb_k \exp\paren{i k \omega t}} \\
   \f\ts{ext}(t)
   &= \db_0 + 2 \sum_{k=1}^{N_H} \Re\bbrack{\db_k \exp\paren{i k \omega t}} \\
-  &= \sum_{k=0}^{N_H} \widehat \db_k \exp\paren{i k \omega t} + \conj{\widehat \db_k \exp\paren{i k \omega t}}.
+  &= \sum_{k=0}^{N_H} \wh \db_k \exp\paren{i k \omega t} + \conj{\wh \db_k \exp\paren{i k \omega t}}.
 \end{align*}
 We store the Fourier coefficients
 \begin{align*}
-  \widehat \z &\coloneq
+  \wh \z &\coloneq
   \begin{bmatrix}
     \ab_0\trp / 2 & \ab_1\trp & \cdots & \ab_{N_H}\trp
   \end{bmatrix}\trp \in \C^{n\paren{N_H + 1}} \\
   &=
   \begin{bmatrix}
-    \widehat \ab_0\trp & \widehat \ab_1\trp & \cdots & \widehat \ab_{N_H}\trp
+    \wh \ab_0\trp & \wh \ab_1\trp & \cdots & \wh \ab_{N_H}\trp
   \end{bmatrix}\trp \\
-  \widehat \bb\ts{nl} &\coloneq
+  \wh \bb\ts{nl} &\coloneq
   \begin{bmatrix}
     \cb_0\trp / 2 & \cb_1\trp & \cdots & \cb_{N_H}\trp
   \end{bmatrix}\trp \\
   &=
   \begin{bmatrix}
-    \widehat \cb_0\trp & \widehat \cb_1\trp & \cdots & \widehat \cb_{N_H}\trp
+    \wh \cb_0\trp & \wh \cb_1\trp & \cdots & \wh \cb_{N_H}\trp
   \end{bmatrix}\trp \\
-  \widehat \bb\ts{ext} &\coloneq
+  \wh \bb\ts{ext} &\coloneq
   \begin{bmatrix}
     \db_0\trp / 2 & \db_1\trp & \cdots & \db_{N_H}\trp
   \end{bmatrix}\trp \\
   &=
   \begin{bmatrix}
-    \widehat \db_0\trp & \widehat \db_1\trp & \cdots & \widehat \db_{N_H}\trp
+    \wh \db_0\trp & \wh \db_1\trp & \cdots & \wh \db_{N_H}\trp
   \end{bmatrix}\trp
 \end{align*}
-and again write $\widehat \bb(\z, \omega) = \widehat \bb\ts{ext}(\omega) - \widehat \bb\ts{nl}(\z)$.
+and again write $\wh \bb(\z, \omega) = \wh \bb\ts{ext}(\omega) - \wh \bb\ts{nl}(\z)$.
 
 \subsection{Projecting the governing equation}
 
 Then writing
 \begin{align}
-  \widehat Q(t, \omega) \coloneq
+  \wh Q(t, \omega) \coloneq
   \begin{bmatrix}
     1 & e^{i \omega t} & \cdots & e^{i N_H \omega t}
   \end{bmatrix} \in \C^{1 \times (N_H + 1)}
@@ -653,20 +655,20 @@ Then writing
 we have
 \begin{align}
   \x(t, \omega)
-  &= (\widehat Q \otimes I_n) \paren*{\widehat \z + \overline {\widehat \z}} \\
+  &= (\wh Q \otimes I_n) \paren*{\wh \z + \overline {\wh \z}} \\
   \f\ts{nl}(\x, \dot \x, \omega)
-  &= (\widehat Q \otimes I_n) \paren*{\widehat \bb\ts{nl} + \overline {\widehat \bb}\ts{nl}} \\
+  &= (\wh Q \otimes I_n) \paren*{\wh \bb\ts{nl} + \overline {\wh \bb}\ts{nl}} \\
   \f\ts{ext}(t, \omega)
-  &= (\widehat Q \otimes I_n) \paren*{\widehat \bb\ts{ext} + \overline {\widehat \bb}\ts{ext}} \\
+  &= (\wh Q \otimes I_n) \paren*{\wh \bb\ts{ext} + \overline {\wh \bb}\ts{ext}} \\
   \f(t, \x, \dot \x, \omega)
-  &= (\widehat Q \otimes I_n) \paren*{\widehat \bb + \overline {\widehat \bb}}.
+  &= (\wh Q \otimes I_n) \paren*{\wh \bb + \overline {\wh \bb}}.
 \end{align}
 We also have
 \begin{align}
   \label{eq:xp(z)-real}
-  \dot \x(t, \omega) &= \omega \paren{\widehat Q \nabla \otimes I_n} \paren*{\widehat \z + \overline {\widehat \z}} \\
+  \dot \x(t, \omega) &= \omega \paren{\wh Q \nabla \otimes I_n} \paren*{\wh \z + \overline {\wh \z}} \\
   \label{eq:xpp(hat-z)-real}
-  \ddot \x(t, \omega) &= \omega^2 \paren*{\widehat Q \nabla^2 \otimes I_n} \paren*{\widehat \z + \overline {\widehat \z}}.
+  \ddot \x(t, \omega) &= \omega^2 \paren*{\wh Q \nabla^2 \otimes I_n} \paren*{\wh \z + \overline {\wh \z}}.
 \end{align}
 We arrive at the system
 \begin{align}
@@ -675,31 +677,31 @@ We arrive at the system
     \omega^2 \paren*{Q(t) \nabla^2} \otimes M
     + \omega \paren*{Q(t) \nabla} \otimes C
     + Q(t) \otimes K
-  } \paren*{\widehat \z + \overline {\widehat \z}}
-  = (Q(t) \otimes I_n) \paren*{\widehat \bb + \overline {\widehat \bb}}.
+  } \paren*{\wh \z + \overline {\wh \z}}
+  = (Q(t) \otimes I_n) \paren*{\wh \bb + \overline {\wh \bb}}.
 \end{align}
 Defining 
 \begin{align}
-  \widetilde {\widehat \nabla}
+  \widetilde {\wh \nabla}
   &\coloneq
   \begin{bmatrix}
     -i N_H & \cdots -i & 0 & i & \cdots & i N_H
   \end{bmatrix} \\
   \label{eq:nabla-real}
-  \widehat \nabla &\coloneq \diag{\widetilde {\widehat \nabla}},
+  \wh \nabla &\coloneq \diag{\widetilde {\wh \nabla}},
 \end{align}
 Fourier--Galerkin projection then transforms this equation to
 \begin{align}
   \bbrack*{
-    \omega^2 \widehat \nabla^2 \otimes M
-    + \omega \widehat \nabla \otimes C
+    \omega^2 \wh \nabla^2 \otimes M
+    + \omega \wh \nabla \otimes C
     + I_{N_H + 1} \otimes K
-  } \paren*{\widehat \z + \overline {\widehat \z}}
-  = \widehat \bb + \overline {\widehat \bb}
+  } \paren*{\wh \z + \overline {\wh \z}}
+  = \wh \bb + \overline {\wh \bb}
 \end{align}
-and we define $\widehat A(\omega) \coloneq \bbrack*{
-  \omega^2 \widehat \nabla^2 \otimes M
-  + \omega \widehat \nabla \otimes C
+and we define $\wh A(\omega) \coloneq \bbrack*{
+  \omega^2 \wh \nabla^2 \otimes M
+  + \omega \wh \nabla \otimes C
   + I_{N_H + 1} \otimes K
 }$.
 
@@ -707,7 +709,7 @@ and we define $\widehat A(\omega) \coloneq \bbrack*{
 
 We define
 \begin{align}
-  \widehat \q(k)
+  \wh \q(k)
   &\coloneq
   \begin{bmatrix}
     e^{i k \omega t_0} \\
@@ -715,25 +717,25 @@ We define
     \vdots \\
     e^{i k \omega t_{N-1}}
   \end{bmatrix} \\
-  \widehat \Gamma
+  \wh \Gamma
   &\coloneq
   \begin{bmatrix}
-    I_n \otimes \widehat \q(0) & I_n \otimes \widehat \q(1) & \cdots & I_n \widehat \q(N_H)
+    I_n \otimes \wh \q(0) & I_n \otimes \wh \q(1) & \cdots & I_n \wh \q(N_H)
   \end{bmatrix}.
 \end{align}
 Then
 \begin{align*}
-  \widehat \Gamma \paren*{\widehat \z + \overline {\widehat \z}}
-  &= (I_n \otimes \widehat \q(0))
-  \paren*{\widehat \ab_{0} + \overline {\widehat \ab}_{0}}
+  \wh \Gamma \paren*{\wh \z + \overline {\wh \z}}
+  &= (I_n \otimes \wh \q(0))
+  \paren*{\wh \ab_{0} + \overline {\wh \ab}_{0}}
   + \cdots
-  + (I_n \otimes \widehat \q(N_H))
-  \paren*{\widehat \ab_{N_H} + \overline {\widehat \ab}_{N_H}} \\
+  + (I_n \otimes \wh \q(N_H))
+  \paren*{\wh \ab_{N_H} + \overline {\wh \ab}_{N_H}} \\
   &= \x_s.
 \end{align*}
 Similarly, defining
 \begin{align}
-  \widehat \Gamma^\dagger &\coloneq \frac1N
+  \wh \Gamma^\dagger &\coloneq \frac1N
   \begin{bmatrix}
     I_n \otimes \q(0)^* \\
     \vdots \\
@@ -742,16 +744,16 @@ Similarly, defining
 \end{align}
 leads to
 \begin{align*}
-  \widehat \Gamma \x_s &= \z.
+  \wh \Gamma \x_s &= \z.
 \end{align*}
-Note this is $\z$, \textit{not} $\widehat \z$.
+Note this is $\z$, \textit{not} $\wh \z$.
 We then can write
 \begin{align}
   \label{eq:x_s-real}
-  \x_s &= \widehat \Gamma \paren*{\widehat \z + \overline {\widehat \z}} \\
+  \x_s &= \wh \Gamma \paren*{\wh \z + \overline {\wh \z}} \\
   \label{eq:xp_s-real}
-  \dot \x_s &= \omega \widehat \Gamma (\widehat \nabla \otimes I_n) \paren*{\widehat \z + \overline {\widehat \z}} \\
-  \ddot \x_s &= \omega^2 \widehat \Gamma (\widehat \nabla^2 \otimes I_n) \paren*{\widehat \z + \overline {\widehat \z}}.
+  \dot \x_s &= \omega \wh \Gamma (\wh \nabla \otimes I_n) \paren*{\wh \z + \overline {\wh \z}} \\
+  \ddot \x_s &= \omega^2 \wh \Gamma (\wh \nabla^2 \otimes I_n) \paren*{\wh \z + \overline {\wh \z}}.
 \end{align}
 
 \end{document}
