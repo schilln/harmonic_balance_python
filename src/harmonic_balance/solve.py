@@ -40,10 +40,10 @@ def get_initial_guess(
     ----------
     A
         Matrix describing linear dynamics in frequency domain (see `get_A`)
-        shape (n * (NH + 1), n * (NH + 1))
+        shape (n * (2 NH + 1), n * (2 NH + 1))
     b_ext
         Exponential Fourier coefficients of external force (see `get_b_ext`)
-        shape (n * (NH + 1),)
+        shape (n * (2 NH + 1),)
 
     Returns
     -------
@@ -77,10 +77,10 @@ def solve_nonlinear(
         Initial guess for solution
     A
         Matrix describing linear dynamics in frequency domain (see `get_A`)
-        shape (n * (NH + 1), n * (NH + 1))
+        shape (n * (2 NH + 1), n * (2 NH + 1))
     b_ext
         Exponential Fourier coefficients of external force (see `get_b_ext`)
-        shape (n * (NH + 1),)
+        shape (n * (2 NH + 1),)
     f_nl
         Nonlinear force function in time domain
         [(n * N,), (n * N,), int] -> (n * N,)

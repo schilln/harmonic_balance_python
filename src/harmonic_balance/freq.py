@@ -18,16 +18,16 @@ def solve_linear_system(A: sparray, b_ext: sparray) -> sparray:
     ----------
     A
         Matrix describing linear dynamics in frequency domain (see `get_A`)
-        shape (n * (NH + 1), n * (NH + 1))
+        shape (n * (2 NH + 1), n * (2 NH + 1))
     b_ext
         Exponential Fourier coefficients of external force (see `get_b_ext`)
-        shape (n * (NH + 1),)
+        shape (n * (2 NH + 1),)
 
     Returns
     -------
     z
         Exponential Fourier coefficients of solution z for Az = b_ext
-        shape (n * (NH + 1),)
+        shape (n * (2 NH + 1),)
     """
     return sparse.linalg.spsolve(A, b_ext)
 
@@ -48,7 +48,7 @@ def get_derivative(
         Fundamental frequency
     coefficients
         Exponential Fourier coefficients to take time derivative of
-        shape (n * (NH + 1),)
+        shape (n * (2 NH + 1),)
     NH
         Assumed highest harmonic index
     n
@@ -61,9 +61,9 @@ def get_derivative(
     -------
     derivative
         Order-th time derivative of coefficients in frequency domain
-        shape (n * (NH + 1),)
+        shape (n * (2 NH + 1),)
     """
-    factors = (1j * omega * np.arange(NH + 1)) ** order
+    factors = (1j * omega * np.arange(-NH, NH + 1)) ** order
     factors = np.repeat(factors, n)
     return factors * coefficients
 
@@ -91,14 +91,14 @@ def get_A(omega: float, NH: int, M: ndarray, C: ndarray, K: ndarray) -> sparray:
     -------
     A
         Frequency-domain linear dynamics matrix
-        shape (n * (NH + 1), n * (NH + 1))
+        shape (n * (2 NH + 1), n * (2 NH + 1))
     """
     # Less efficient implementation:
     # sparse.kron(_get_diag_nabla(omega, NH, 2), M)
     # + sparse.kron(_get_diag_nabla(omega, NH), C)
     # + sparse.kron(sparse.eye_array(NH + 1), K)
     return sparse.block_diag(
-        [_get_block(k, omega, M, C, K) for k in range(0, NH + 1)]
+        [_get_block(k, omega, M, C, K) for k in range(-NH, NH + 1)]
     ).tocsr()
 
 
@@ -232,7 +232,7 @@ def _get_block(
 
 
 def get_nabla_vector(omega: float, NH: int, exponent: int = 1):
-    return (1j * omega * np.arange(NH + 1)) ** exponent
+    return (1j * omega * np.arange(-NH, NH + 1)) ** exponent
 
 
 def get_nabla(omega: float, NH: int, exponent: int = 1):

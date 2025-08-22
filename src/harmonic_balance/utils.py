@@ -15,8 +15,10 @@ def extract_dofs_freq(
     Parameters
     ----------
     coefficients
-        Should be of the form [a0, a1, ..., aNH] where ak denotes the
-        coefficients of the kth harmonic for the n degrees of freedom.
+        Should be of the form [a_{-NH}, a_{-1}, a0, a1, ..., aNH] where ak
+        denotes the coefficients of the kth harmonic for the n degrees of
+        freedom.
+        shape (n * (2 NH + 1),)
     n
         Number of degrees of freedom
 
@@ -24,7 +26,7 @@ def extract_dofs_freq(
     -------
     reshaped
         Coefficients where each row corresponds to a degree of freedom
-        shape (n, NH + 1)
+        shape (n, 2 NH + 1)
     """
     result = coefficients.reshape((n, -1), order="F")
     if isinstance(result, sparse.coo_array):
@@ -40,13 +42,14 @@ def combine_dofs_freq(coefficients: ndarray | sparray) -> ndarray | sparray:
     ----------
     coefficients
         Coefficients where each row corresponds to a degree of freedom
-        shape (n, NH + 1)
+        shape (n, 2 NH + 1)
 
     Returns
     -------
     reshaped
-        Of the form [a0, a1, ..., aNH] where ak denotes the
+        Of the form [a_{-NH}, a_{-1}, a0, a1, ..., aNH] where ak denotes the
         coefficients of the kth harmonic for the n degrees of freedom.
+        shape (n * (2 NH + 1),)
     """
     result = coefficients.reshape((-1,), order="F")
     if isinstance(result, sparse.coo_array):
