@@ -63,8 +63,7 @@ def get_derivative(
         Order-th time derivative of coefficients in frequency domain
         shape (n * (NH + 1),)
     """
-    factors = (1j * omega * np.arange(NH + 1)) ** order
-    factors = np.repeat(factors, n)
+    factors = np.repeat(get_nabla_vector(omega, NH, order), n)
     return factors * coefficients
 
 
