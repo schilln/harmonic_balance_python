@@ -786,4 +786,37 @@ Additionally, we have
   }.
 \end{align}
 
+\subsection{Solving the equation}
+
+Define the residual equation
+\begin{align}
+  \wh \Rb(\wh \z)
+  &\coloneq \wh A(\omega) \paren*{\wh \z + \overline {\wh \z}}
+  + \paren*{\wh \bb\ts{nl} + \overline {\wh \bb}\ts{nl}}
+  - \paren*{\wh \bb\ts{ext} + \overline {\wh \bb}\ts{ext}}.
+\end{align}
+We need to compute
+% TODO: Is this differentiation right? And the same question for the nonlinear force...
+\begin{align*}
+  \wh \Rb_{\wh \z}(\wh \z) = \wh A(\omega) + \frac {d \wh \bb\ts{nl}(\wh \z)}{d \wh \z}.
+\end{align*}
+Observe,
+\begin{align*}
+  \frac {d \wh \bb\ts{nl}(\wh \z)}{d \wh \z}
+  &= \frac d{d \wh \z} \bigg[
+    \diag(1/2, 1, \ldots, 1) \Gamma^\dagger \f\ts{nl} \paren{\x_s,\; \dot \x_s}
+  \bigg] \\
+  &= \diag(1/2, 1, \ldots, 1) \Gamma^\dagger \frac d{d \wh \z} \bigg[
+    \f\ts{nl} \paren{\x_s,\; \dot \x_s}
+  \bigg] \\
+  &= \diag(1/2, 1, \ldots, 1) \Gamma^\dagger \bigg[
+    \frac d{d \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \frac {d \x_s}{d \wh \z}
+    + \frac d{d \dot \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \frac {d \dot \x_s}{d \wh \z}
+  \bigg] \\
+  &= \diag(1/2, 1, \ldots, 1) \Gamma^\dagger \bigg[
+    \frac d{d \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \wh \Gamma
+    + \omega \frac d{d \dot \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \wh \Gamma (\wh \nabla \otimes I_n)
+  \bigg].
+\end{align*}
+
 \end{document}
