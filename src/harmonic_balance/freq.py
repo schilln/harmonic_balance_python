@@ -93,10 +93,6 @@ def get_A(omega: float, NH: int, M: ndarray, C: ndarray, K: ndarray) -> sparray:
         Frequency-domain linear dynamics matrix
         shape (n * (NH + 1), n * (NH + 1))
     """
-    # Less efficient implementation:
-    # sparse.kron(_get_diag_nabla(omega, NH, 2), M)
-    # + sparse.kron(_get_diag_nabla(omega, NH), C)
-    # + sparse.kron(sparse.eye_array(NH + 1), K)
     return sparse.block_diag(
         [_get_block(k, omega, M, C, K) for k in range(0, NH + 1)]
     ).tocsr()
