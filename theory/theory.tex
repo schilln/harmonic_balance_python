@@ -582,35 +582,81 @@ Since $\x$ is real, we know $\ab_{-k} = \conj{\ab_k}$ and $\exp\paren{-i k \omeg
 \begin{align*}
   \x(t)
   &\approx \sum_{k=-N_H}^{N_H} \ab_k \exp\paren{i k \omega t} \\
-  &= \ab_0 + \sum_{k=0}^{N_H}
+  &= \ab_0 + \sum_{k=1}^{N_H}
   \ab_k \exp\paren{i k \omega t}
   + \ab_{-k} \exp\paren{-i k \omega t} \\
-  &= \ab_0 + \sum_{k=0}^{N_H}
+  &= \ab_0 + \sum_{k=1}^{N_H}
   \ab_k \exp\paren{i k \omega t}
   + \conj{\ab_k \exp\paren{i k \omega t}} \\
-  &= \ab_0 + 2 \sum_{k=0}^{N_H} \Re\bbrack{\ab_k \exp\paren{i k \omega t}}.
+  &= \ab_0 + 2 \sum_{k=1}^{N_H} \Re\bbrack{\ab_k \exp\paren{i k \omega t}}.
+\end{align*}
+Alternatively, if we define
+\begin{align*}
+  \widehat \ab_k \coloneq
+  \begin{cases}
+    \ab_k / 2 & k = 0, \\
+    \ab_k & k \ne 0,
+  \end{cases}
+\end{align*}
+then since $\x$ is real-valued, we know that $\ab_0 \in \R$, and so we can write
+\begin{align*}
+  \x(t)
+  &\approx \sum_{k=0}^{N_H} \widehat \ab_k \exp\paren{i k \omega t} + \conj{\widehat \ab_k \exp\paren{i k \omega t}}.
 \end{align*}
 We can write the forces similarly:
 \begin{align*}
   \f\ts{nl}(\x, \dot \x)
-  &= \cb_0 + 2 \sum_{k=0}^{N_H} \Re\bbrack{\cb_k \exp\paren{i k \omega t}} \\
+  &= \cb_0 + 2 \sum_{k=1}^{N_H} \Re\bbrack{\cb_k \exp\paren{i k \omega t}} \\
+  &= \sum_{k=0}^{N_H} \widehat \cb_k \exp\paren{i k \omega t} + \conj{\widehat \cb_k \exp\paren{i k \omega t}} \\
   \f\ts{ext}(t)
-  &= \db_0 + 2 \sum_{k=0}^{N_H} \Re\bbrack{\db_k \exp\paren{i k \omega t}}.
+  &= \db_0 + 2 \sum_{k=1}^{N_H} \Re\bbrack{\db_k \exp\paren{i k \omega t}} \\
+  &= \sum_{k=0}^{N_H} \widehat \db_k \exp\paren{i k \omega t} + \conj{\widehat \db_k \exp\paren{i k \omega t}}.
 \end{align*}
-Collect the Fourier coefficients:
+We store the Fourier coefficients
 \begin{align*}
   \widehat \z &\coloneq
   \begin{bmatrix}
-    \ab_0\trp & \ab_1\trp & \cdots & \ab_{N_H}\trp
+    \ab_0\trp / 2 & \ab_1\trp & \cdots & \ab_{N_H}\trp
   \end{bmatrix}\trp \in \C^{n\paren{N_H + 1}} \\
+  &=
+  \begin{bmatrix}
+    \widehat \ab_0\trp & \widehat \ab_1\trp & \cdots & \widehat \ab_{N_H}\trp
+  \end{bmatrix}\trp \\
   \widehat \bb\ts{nl} &\coloneq
   \begin{bmatrix}
-    \cb_0\trp & \cb_1\trp & \cdots & \cb_{N_H}\trp
+    \cb_0\trp / 2 & \cb_1\trp & \cdots & \cb_{N_H}\trp
+  \end{bmatrix}\trp \\
+  &=
+  \begin{bmatrix}
+    \widehat \cb_0\trp & \widehat \cb_1\trp & \cdots & \widehat \cb_{N_H}\trp
   \end{bmatrix}\trp \\
   \widehat \bb\ts{ext} &\coloneq
   \begin{bmatrix}
-    \db_0\trp & \db_1\trp & \cdots & \db_{N_H}\trp
-  \end{bmatrix}\trp.
+    \db_0\trp / 2 & \db_1\trp & \cdots & \db_{N_H}\trp
+  \end{bmatrix}\trp \\
+  &=
+  \begin{bmatrix}
+    \widehat \db_0\trp & \widehat \db_1\trp & \cdots & \widehat \db_{N_H}\trp
+  \end{bmatrix}\trp
 \end{align*}
+and again write $\widehat \bb(\z, \omega) = \widehat \bb\ts{ext}(\omega) - \widehat \bb\ts{nl}(\z)$.
+Then writing
+\begin{align}
+  \widehat Q(t, \omega) \coloneq
+  \begin{bmatrix}
+    1 & e^{i \omega t} & \cdots & e^{i N_H \omega t}
+  \end{bmatrix} \in \C^{1 \times (N_H + 1)}
+\end{align}
+we have
+\begin{align}
+  \x(t, \omega)
+  &= (\widehat Q \otimes I_n) \paren*{\widehat \z + \overline {\widehat \z}} \\
+  \f\ts{nl}(\x, \dot \x, \omega)
+  &= (\widehat Q \otimes I_n) \paren*{\widehat \bb\ts{nl} + \overline {\widehat \bb}\ts{nl}} \\
+  \f\ts{ext}(t, \omega)
+  &= (\widehat Q \otimes I_n) \paren*{\widehat \bb\ts{ext} + \overline {\widehat \bb}\ts{ext}} \\
+  \f(t, \x, \dot \x, \omega)
+  &= (\widehat Q \otimes I_n) \paren*{\widehat \bb + \overline {\widehat \bb}}.
+\end{align}
 
 \end{document}
