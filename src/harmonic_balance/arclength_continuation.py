@@ -53,8 +53,8 @@ def get_dR_d_omega(
     C: ndarray,
 ) -> sparray:
     return (
-        2 * sparse.kron(freq._get_diag_nabla(omega, NH, 2), M)
-        + sparse.kron(freq._get_diag_nabla(omega, NH), C)
+        2 * sparse.kron(freq.get_nabla(omega, NH, 2), M)
+        + sparse.kron(freq.get_nabla(omega, NH), C)
     ) / omega @ z + get_db_d_omega(omega, z, df_nl_d_xdot, NH, n, N)
 
 
@@ -79,7 +79,7 @@ def get_db_dz(
         inv_gamma
         @ df_nl_d_xdot(x, xp, N)
         @ gamma
-        @ sparse.kron(freq._get_diag_nabla(omega, NH), sparse.eye_array(n))
+        @ sparse.kron(freq.get_nabla(omega, NH), sparse.eye_array(n))
     )
 
     return db_dx + db_d_xdot
@@ -104,7 +104,7 @@ def get_db_d_omega(
         inv_gamma
         @ df_nl_d_xdot(x, xp, N)
         @ gamma
-        @ freq._get_diag_nabla(omega, NH)
+        @ freq.get_nabla(omega, NH)
         / omega
         @ z
     )

@@ -228,9 +228,9 @@ def _get_block(
     return -(k * omega)**2 * M + 1j * k * omega * C + K
 
 
-def _get_nabla(omega: float, NH: int, exponent: int = 1):
+def get_nabla_vector(omega: float, NH: int, exponent: int = 1):
     return (1j * omega * np.arange(NH + 1)) ** exponent
 
 
-def _get_diag_nabla(omega: float, NH: int, exponent: int = 1):
-    return sparse.diags_array(_get_nabla(omega, NH, exponent))
+def get_nabla(omega: float, NH: int, exponent: int = 1):
+    return sparse.diags_array(get_nabla_vector(omega, NH, exponent))
