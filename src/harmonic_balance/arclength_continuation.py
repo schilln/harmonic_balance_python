@@ -21,6 +21,18 @@ def get_R(
     n: int,
     N: int,
 ) -> sparray:
+    b_nl = get_b_nl(z, omega, f_nl, NH, n, N)
+    return A @ z + b_nl - b_ext
+
+
+def get_b_nl(
+    z: sparray | ndarray,
+    omega: float,
+    f_nl: abc.Callable[[ndarray, ndarray, int], ndarray],
+    NH: int,
+    n: int,
+    N: int,
+) -> sparray:
     zp = freq.get_derivative(omega, z, NH, n)
     gamma = aft.get_gamma(omega, NH, n, N)
 
@@ -28,8 +40,7 @@ def get_R(
     xp = aft.time_from_freq(n, gamma, zp)
     fx = f_nl(x, xp, N)
     b_nl = aft.freq_from_time(aft.get_inv_gamma(omega, NH, n, N), fx)
-
-    return A @ z + b_nl - b_ext
+    return b_nl
 
 
 def get_dR_dz(
