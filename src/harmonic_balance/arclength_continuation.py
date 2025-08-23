@@ -119,7 +119,6 @@ def correct_y(
     converged = False
     for i in range(max_iter):
         omega = y[-1].real
-        z = y[:-1]
 
         A = freq.get_A(omega, NH, M, C, K)
         step = _solve_step(
@@ -137,8 +136,10 @@ def correct_y(
             M,
             C,
         )
-        y[-1] += step[-1].real
+        y[-1] += step[-1]
         y[:-1] += step[:-1]
+
+        omega, z = y[-1].real, y[:-1]
 
         R = solve.get_R(z, omega, A, f_nl, b_ext, NH, n, N)
         P = get_P(y, y_i0, s)
@@ -264,4 +265,6 @@ def _solve_step(
         ]
     )
 
-    return np.linalg.solve(jacobian, -rhs)
+    step = np.linalg.solve(jacobian, -rhs)
+    step[-1] = step[-1].real
+    return step
