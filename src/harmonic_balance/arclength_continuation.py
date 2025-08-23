@@ -14,6 +14,21 @@ array = ndarray | sparray
 def predict_y(
     y_i1: sparray | ndarray, y_i0: sparray | ndarray, s: float
 ) -> sparray | ndarray:
+    """Given the previous two solutions (i = 0, 1), predict the next solution
+    (i = 2).
+
+    Parameters
+    ----------
+    y_i1, y_i0
+        Previous solutions y_i = [z_i, omega_i], i = 0, 1
+        shape (n(NH + 1) + 1,)
+
+    Returns
+    -------
+    y_i2_k0
+        Predicted solution y_ik, i = 2, k = 0
+        shape (n(NH + 1) + 1,)
+    """
     secant = y_i1 - y_i0
     direction = secant / np.linalg.norm(secant)
     y_i2_k0 = y_i1 + s * direction
@@ -37,6 +52,60 @@ def correct_y(
     tol: float = 1e-6,
     max_iter: int = 100,
 ) -> tuple[ndarray, ndarray, bool, int]:
+    """Compute the next solution y = [z, omega] to the nonlinear system
+    A(omega)z + b = b_ext along the nonlinear frequency response curve.
+
+    Parameters
+    ----------
+    y_i1_k0
+        Predicted solution y_ik, i = 2, k = 0
+    y_i0
+        Previous solution along nonlinear frequency response curve y_i, i = 0.
+    b_ext
+        Exponential Fourier coefficients of external force (see `get_b_ext`)
+        shape (n * (NH + 1),)
+    f_nl
+        Nonlinear force function in time domain
+        [(n * N,), (n * N,), int] -> (n * N,)
+    f_nl_dx
+        Derivative of f_nl with respect to x
+        [(n * N,), (n * N,), int] -> (n * N, n * N)
+    f_nl_d_xdot
+        Derivative of f_nl with respect to x'
+        [(n * N,), (n * N,), int] -> (n * N, n * N)
+    NH
+        Assumed highest harmonic index
+    n
+        Number of degrees of freedom
+    N
+        Number of points to sample in time domain
+    s
+        Goal distance between y_i1 and y_i0
+    M
+        Mass matrix
+        shape (n, n)
+    C
+        Damping matrix
+        shape (n, n)
+    K
+        Stiffness matrix
+        shape (n, n)
+    tol
+        Tolerance that relative error |rhs| / |y| must reach
+    max_iter
+        Maximum number of allowed iterations
+
+    Returns
+    -------
+    y
+        Solution y = [z, omega] to nonlinear system A(omega)z + b_nl = b_ext
+    rhs
+        Residual rhs = [R, P]
+    converged
+        True if relative error is less than tol within max_iter iterations
+    i
+        Number of iterations
+    """
     y = y_i1_k0.copy()
 
     omega, z = y[-1].real, y[:-1]
@@ -83,6 +152,20 @@ def correct_y(
 
 
 def get_rel_error(rhs: ndarray, y: ndarray) -> float:
+    """Compute the relative error |rhs| / |y|.
+
+    Parameters
+    ----------
+    rhs
+        Residual rhs = [R, P]
+    y
+        Solution
+
+    Returns
+    -------
+    rel_error
+        Relative error |rhs| / |y|
+    """
     return np.linalg.norm(rhs) / np.linalg.norm(y)
 
 
@@ -91,6 +174,21 @@ def get_P(
     y_i0: sparray | ndarray,
     s: float,
 ) -> float:
+    """Compute deviation of distance between y_i1 and y_i0 from the step size s.
+
+    Parameters
+    ----------
+    y_i1, y_i0
+        Solutions y_i = [z_i, omega_i], i = 0, 1
+        shape (n(NH + 1) + 1,)
+    s
+        Goal distance between y_i1 and y_i0
+
+    Returns
+    -------
+    P
+        Residual norm(y_i1 - y_i0)^2 - s^2
+    """
     omega_i1, z_i1 = y_i1[-1].real, y_i1[:-1]
     omega_i0, z_i0 = y_i0[-1].real, y_i0[:-1]
 
