@@ -46,6 +46,6 @@ def get_db_nl_d_omega(
         inv_gamma
         @ df_nl_d_xdot(x, xp, N)
         @ gamma
-        @ freq.get_nabla(omega, NH)
+        @ sparse.kron(freq.get_nabla(NH), sparse.eye_array(n))
         @ z
     )

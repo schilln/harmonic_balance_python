@@ -8,12 +8,12 @@ array = ndarray | sparray
 
 
 def get_P(
-    z1: sparray | ndarray,
-    z0: sparray | ndarray,
-    omega1: float,
-    omega0: float,
+    y1: sparray | ndarray,
+    y0: sparray | ndarray,
     s: float,
 ) -> float:
+    omega1, omega0 = y1[-1].real, y0[-1].real
+    z1, z0 = y1[:-1], y0[:-1]
     if isinstance(z1, ndarray) or isinstance(z0, ndarray):
         norm = np.linalg.norm
     else:
