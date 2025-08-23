@@ -12,16 +12,17 @@ array = ndarray | sparray
 
 
 def predict_y(
-    y_current: sparray | ndarray, y_previous: sparray | ndarray, s: float
+    y_i1: sparray | ndarray, y_i0: sparray | ndarray, s: float
 ) -> sparray | ndarray:
-    secant = y_current - y_previous
+    secant = y_i1 - y_i0
     direction = secant / np.linalg.norm(secant)
-    return y_current + s * direction
+    y_i2_k0 = y_i1 + s * direction
+    return y_i2_k0
 
 
 def correct_y(
-    y1: sparray | ndarray,
-    y0: sparray | ndarray,
+    y_i1_k0: sparray | ndarray,
+    y_i0: sparray | ndarray,
     b_ext: ndarray,
     f_nl: abc.Callable[[ndarray, ndarray, int], ndarray],
     df_nl_dx: abc.Callable[[ndarray, ndarray, int], ndarray],
@@ -36,24 +37,25 @@ def correct_y(
     tol: float = 1e-6,
     max_iter: int = 100,
 ) -> tuple[ndarray, ndarray, bool, int]:
-    omega1, z1 = y1[-1].real, y1[:-1]
-    A = freq.get_A(omega1, NH, M, C, K)
-    R = solve.get_R(z1, omega1, A, f_nl, b_ext, NH, n, N)
-    P = get_P(y1, y0, s)
-    if get_rel_error(get_rhs(R, P), y1) < tol:
-        return y1, P, True, 0
+    y = y_i1_k0.copy()
+
+    omega, z = y[-1].real, y[:-1]
+    A = freq.get_A(omega, NH, M, C, K)
+    R = solve.get_R(z, omega, A, f_nl, b_ext, NH, n, N)
+    P = get_P(y, y_i0, s)
+    rhs = get_rhs(R, P)
+    if get_rel_error(rhs, y) < tol:
+        return y, rhs, True, 0
 
     converged = False
     for i in range(max_iter):
-        tmp = y1.copy()
+        omega = y[-1].real
+        z = y[:-1]
 
-        omega1 = y1[-1].real
-        z1 = y1[:-1]
-
-        A = freq.get_A(omega1, NH, M, C, K)
+        A = freq.get_A(omega, NH, M, C, K)
         step = _solve_step(
-            y1,
-            y0,
+            y,
+            y_i0,
             A,
             b_ext,
             f_nl,
@@ -66,21 +68,18 @@ def correct_y(
             M,
             C,
         )
-        y1[-1] += step[-1].real
-        y1[:-1] += step[:-1]
+        y[-1] += step[-1].real
+        y[:-1] += step[:-1]
 
-        y0 = tmp
-        R = solve.get_R(z1, omega1, A, f_nl, b_ext, NH, n, N)
-        P = get_P(y1, y0, s)
+        R = solve.get_R(z, omega, A, f_nl, b_ext, NH, n, N)
+        P = get_P(y, y_i0, s)
         rhs = get_rhs(R, P)
 
-        print(get_rel_error(rhs, y1))
-
-        if get_rel_error(rhs, y1) < tol:
+        if get_rel_error(rhs, y) < tol:
             converged = True
             break
 
-    return y1, rhs, converged, i + 1 if "i" in locals() else 0
+    return y, rhs, converged, i + 1 if "i" in locals() else 0
 
 
 def get_rel_error(rhs: ndarray, y: ndarray) -> float:
@@ -88,31 +87,32 @@ def get_rel_error(rhs: ndarray, y: ndarray) -> float:
 
 
 def get_P(
-    y1: sparray | ndarray,
-    y0: sparray | ndarray,
+    y_i1: sparray | ndarray,
+    y_i0: sparray | ndarray,
     s: float,
 ) -> float:
-    omega1, omega0 = y1[-1].real, y0[-1].real
-    z1, z0 = y1[:-1], y0[:-1]
-    if isinstance(z1, ndarray) or isinstance(z0, ndarray):
+    omega_i1, z_i1 = y_i1[-1].real, y_i1[:-1]
+    omega_i0, z_i0 = y_i0[-1].real, y_i0[:-1]
+
+    if isinstance(z_i1, ndarray) or isinstance(z_i0, ndarray):
         norm = np.linalg.norm
     else:
         norm = sparse.linalg.norm
-    return norm(z1 - z0) ** 2 + (omega1 - omega0) ** 2 - s**2
+    return norm(z_i1 - z_i0) ** 2 + (omega_i1 - omega_i0) ** 2 - s**2
 
 
 def get_dP_dz(
-    z1: sparray | ndarray,
-    z0: sparray | ndarray,
+    z_i1: sparray | ndarray,
+    z_i0: sparray | ndarray,
 ) -> sparray | ndarray:
-    return 2 * (z1 - z0)
+    return 2 * (z_i1 - z_i0)
 
 
 def get_dP_d_omega(
-    omega1: float,
-    omega0: float,
+    omega_i1: float,
+    omega_i0: float,
 ) -> float:
-    return 2 * (omega1 - omega0)
+    return 2 * (omega_i1 - omega_i0)
 
 
 def get_rhs(R: sparray | ndarray, P: float) -> sparray | ndarray:
@@ -120,8 +120,8 @@ def get_rhs(R: sparray | ndarray, P: float) -> sparray | ndarray:
 
 
 def _solve_step(
-    y1: ndarray,
-    y0: ndarray,
+    y_i1: ndarray,
+    y_i0: ndarray,
     A: sparray,
     b_ext: ndarray,
     f_nl: abc.Callable[[ndarray, ndarray, int], ndarray],
@@ -139,23 +139,25 @@ def _solve_step(
     Returns
     -------
     step
-        The step to add to y = [z, omega]
+        The step to add to y_i1 = [z_i1, omega_i1] to get the (k+1)th correction
     """
-    omega1, z1 = y1[-1].real, y1[:-1]
-    omega0, z0 = y0[-1].real, y0[:-1]
+    omega_i1, z_i1 = y_i1[-1].real, y_i1[:-1]
+    omega_i0, z_i0 = y_i0[-1].real, y_i0[:-1]
 
-    R = solve.get_R(z1, omega1, A, f_nl, b_ext, NH, n, N)
-    P = get_P(y1, y0, s)
+    R = solve.get_R(z_i1, omega_i1, A, f_nl, b_ext, NH, n, N)
+    P = get_P(y_i1, y_i0, s)
     rhs = get_rhs(R, P)
 
-    db_nl_dz = solve.get_db_nl_dz(omega1, z1, df_nl_dx, df_nl_d_xdot, NH, n, N)
+    db_nl_dz = solve.get_db_nl_dz(
+        omega_i1, z_i1, df_nl_dx, df_nl_d_xdot, NH, n, N
+    )
     dR_dz = solve.get_dR_dz(A, db_nl_dz)
     dR_d_omega = continuation.get_dR_d_omega(
-        z1, omega1, df_nl_d_xdot, NH, n, N, M, C
+        z_i1, omega_i1, df_nl_d_xdot, NH, n, N, M, C
     )
 
-    dP_dz = get_dP_dz(z1, z0)
-    dP_d_omega = get_dP_d_omega(omega1, omega0)
+    dP_dz = get_dP_dz(z_i1, z_i0)
+    dP_d_omega = get_dP_d_omega(omega_i1, omega_i0)
 
     jacobian = np.block(
         [
