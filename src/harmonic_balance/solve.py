@@ -3,13 +3,81 @@ from collections import abc
 import numpy as np
 from scipy import sparse
 
-from harmonic_balance import freq
-from harmonic_balance import arclength_continuation as alc
+from harmonic_balance import aft, freq
 
 ndarray = np.ndarray
 sparray = sparse.sparray
 array = ndarray | sparray
 # TODO: Fix the use of these type annotations.
+
+
+def get_R(
+    z: sparray | ndarray,
+    omega: float,
+    A: sparray,
+    f_nl: abc.Callable[[ndarray, ndarray, int], ndarray],
+    b_ext: sparray,
+    NH: int,
+    n: int,
+    N: int,
+) -> sparray:
+    b_nl = get_b_nl(z, omega, f_nl, NH, n, N)
+    return A @ z + b_nl - b_ext
+
+
+def get_b_nl(
+    z: sparray | ndarray,
+    omega: float,
+    f_nl: abc.Callable[[ndarray, ndarray, int], ndarray],
+    NH: int,
+    n: int,
+    N: int,
+) -> sparray:
+    gamma = aft.get_gamma(omega, NH, n, N)
+
+    x = aft.time_from_freq(n, gamma, z)
+    zp = freq.get_derivative(omega, z, NH, n)
+    xp = aft.time_from_freq(n, gamma, zp)
+
+    fx = f_nl(x, xp, N)
+    return aft.freq_from_time(aft.get_inv_gamma(omega, NH, n, N), fx)
+
+
+def get_dR_dz(
+    A: sparray,
+    db_nl_dz: sparray | ndarray,
+) -> sparray:
+    res = A + db_nl_dz
+    if isinstance(res, np.matrix):
+        return res.A
+    return res
+
+
+def get_db_nl_dz(
+    omega: float,
+    z: sparray | ndarray,
+    df_nl_dx: abc.Callable[[ndarray, ndarray, int], ndarray],
+    df_nl_d_xdot: abc.Callable[[ndarray, ndarray, int], ndarray],
+    NH: int,
+    n: int,
+    N: int,
+) -> sparray:
+    gamma = aft.get_gamma(omega, NH, n, N)
+    inv_gamma = aft.get_inv_gamma(omega, NH, n, N)
+
+    x = aft.time_from_freq(n, gamma, z)
+    zp = freq.get_derivative(omega, z, NH, n)
+    xp = aft.time_from_freq(n, gamma, zp)
+
+    db_dx = inv_gamma @ df_nl_dx(x, xp, N) @ gamma
+    db_d_xdot = (
+        inv_gamma
+        @ df_nl_d_xdot(x, xp, N)
+        @ gamma
+        @ sparse.kron(omega * freq.get_nabla(NH), sparse.eye_array(n))
+    )
+
+    return db_dx + db_d_xdot
 
 
 def get_rel_error(R: sparray, z: ndarray) -> float:
@@ -112,7 +180,7 @@ def solve_nonlinear(
     i
         Number of iterations
     """
-    R = alc.get_R(z0, omega, A, f_nl, b_ext, NH, n, N)
+    R = get_R(z0, omega, A, f_nl, b_ext, NH, n, N)
     if get_rel_error(R, z0) < tol:
         return z0, R, True, 0
 
@@ -122,7 +190,7 @@ def solve_nonlinear(
         z += _solve_nonlinear_step(
             omega, z, A, b_ext, f_nl, df_nl_dx, df_nl_d_xdot, NH, n, N
         )
-        R = alc.get_R(z, omega, A, f_nl, b_ext, NH, n, N)
+        R = get_R(z, omega, A, f_nl, b_ext, NH, n, N)
 
         if get_rel_error(R, z) < tol:
             converged = True
@@ -150,9 +218,9 @@ def _solve_nonlinear_step(
     step
         The step to add to z to solve the nonlinear system Az + b = b_ext
     """
-    db_nl_dz = alc.get_db_nl_dz(omega, z, df_nl_dx, df_nl_d_xdot, NH, n, N)
+    db_nl_dz = get_db_nl_dz(omega, z, df_nl_dx, df_nl_d_xdot, NH, n, N)
 
-    R = alc.get_R(z, omega, A, f_nl, b_ext, NH, n, N)
-    dR_dz = alc.get_dR_dz(A, db_nl_dz)
+    R = get_R(z, omega, A, f_nl, b_ext, NH, n, N)
+    dR_dz = get_dR_dz(A, db_nl_dz)
 
     return np.linalg.solve(dR_dz, -R)
