@@ -66,7 +66,7 @@ def get_dR_d_omega(
     return (
         2 * sparse.kron(omega * freq.get_nabla(NH, 2), M)
         + sparse.kron(freq.get_nabla(NH), C)
-    ) @ z + get_db_d_omega(omega, z, df_nl_d_xdot, NH, n, N)
+    ) @ z + get_db_nl_d_omega(omega, z, df_nl_d_xdot, NH, n, N)
 
 
 def get_db_nl_dz(
@@ -96,7 +96,7 @@ def get_db_nl_dz(
     return db_dx + db_d_xdot
 
 
-def get_db_d_omega(
+def get_db_nl_d_omega(
     omega: float,
     z: sparray | ndarray,
     df_nl_d_xdot: abc.Callable[[ndarray, ndarray, int], ndarray],
