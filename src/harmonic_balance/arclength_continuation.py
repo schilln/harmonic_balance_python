@@ -1,4 +1,5 @@
 from collections import abc
+import traceback
 
 import numpy as np
 from scipy import sparse
@@ -125,23 +126,28 @@ def compute_nlfr_curve(
     for i in range(2, num_points):
         y_k0 = predict_y(ys[i - 1], ys[i - 2], s)
 
-        ys[i], rhs, convergeds[i], iters[i] = correct_y(
-            y_k0,
-            ys[i - 1],
-            b_ext,
-            f_nl,
-            df_nl_dx,
-            df_nl_d_xdot,
-            NH,
-            n,
-            N,
-            s,
-            M,
-            C,
-            K,
-            tol,
-            max_iter,
-        )
+        try:
+            ys[i], rhs, convergeds[i], iters[i] = correct_y(
+                y_k0,
+                ys[i - 1],
+                b_ext,
+                f_nl,
+                df_nl_dx,
+                df_nl_d_xdot,
+                NH,
+                n,
+                N,
+                s,
+                M,
+                C,
+                K,
+                tol,
+                max_iter,
+            )
+        except np.linalg.LinAlgError:
+            print(traceback.format_exc())
+            return ys, rel_errors, convergeds, iters
+
         rel_errors[i] = get_rel_error(rhs, ys[i])
         if not convergeds[i]:
             print(f"iteration {i:0>3} didn't converge")
