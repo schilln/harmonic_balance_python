@@ -134,7 +134,7 @@ def solve_nonlinear(
     N: int,
     tol: float = 1e-6,
     max_iter: int = 100,
-) -> ndarray:
+) -> tuple[ndarray, ndarray, bool, int]:
     """Solve the nonlinear system Az + b = b_ext.
 
     Parameters
