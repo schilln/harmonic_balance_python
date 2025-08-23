@@ -190,14 +190,11 @@ def get_P(
     P
         Residual norm(y_i1 - y_i0)^2 - s^2
     """
-    omega_i1, z_i1 = y_i1[-1].real, y_i1[:-1]
-    omega_i0, z_i0 = y_i0[-1].real, y_i0[:-1]
-
-    if isinstance(z_i1, ndarray) or isinstance(z_i0, ndarray):
+    if isinstance(y_i1, ndarray) or isinstance(y_i0, ndarray):
         norm = np.linalg.norm
     else:
         norm = sparse.linalg.norm
-    return norm(z_i1 - z_i0) ** 2 + (omega_i1 - omega_i0) ** 2 - s**2
+    return norm(y_i1 - y_i0) ** 2 - s**2
 
 
 def get_dP_dz(
