@@ -172,9 +172,9 @@ def solve_nonlinear(
     Returns
     -------
     z
-        Solution to nonlinear system Az + b = b_ext
+        Solution to nonlinear system Az + b_nl = b_ext
     R
-        Frequency domain residual Az + f_nl - b_ext
+        Frequency domain residual Az + b_nl - b_ext
     converged
         True if relative error is less than tol within max_iter iterations
     i
