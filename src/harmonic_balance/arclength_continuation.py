@@ -33,21 +33,21 @@ def get_b_nl(
     n: int,
     N: int,
 ) -> sparray:
-    zp = freq.get_derivative(omega, z, NH, n)
     gamma = aft.get_gamma(omega, NH, n, N)
 
     x = aft.time_from_freq(n, gamma, z)
+    zp = freq.get_derivative(omega, z, NH, n)
     xp = aft.time_from_freq(n, gamma, zp)
+
     fx = f_nl(x, xp, N)
-    b_nl = aft.freq_from_time(aft.get_inv_gamma(omega, NH, n, N), fx)
-    return b_nl
+    return aft.freq_from_time(aft.get_inv_gamma(omega, NH, n, N), fx)
 
 
 def get_dR_dz(
     A: sparray,
-    db_dz: sparray | ndarray,
+    db_nl_dz: sparray | ndarray,
 ) -> sparray:
-    res = A + db_dz
+    res = A + db_nl_dz
     if isinstance(res, np.matrix):
         return res.A
     return res
@@ -78,8 +78,8 @@ def get_db_nl_dz(
     n: int,
     N: int,
 ) -> sparray:
-    inv_gamma = aft.get_inv_gamma(omega, NH, n, N)
     gamma = aft.get_gamma(omega, NH, n, N)
+    inv_gamma = aft.get_inv_gamma(omega, NH, n, N)
 
     x = aft.time_from_freq(n, gamma, z)
     zp = freq.get_derivative(omega, z, NH, n)
@@ -104,8 +104,8 @@ def get_db_d_omega(
     n: int,
     N: int,
 ):
-    inv_gamma = aft.get_inv_gamma(omega, NH, n, N)
     gamma = aft.get_gamma(omega, NH, n, N)
+    inv_gamma = aft.get_inv_gamma(omega, NH, n, N)
 
     x = aft.time_from_freq(n, gamma, z)
     zp = freq.get_derivative(omega, z, NH, n)
