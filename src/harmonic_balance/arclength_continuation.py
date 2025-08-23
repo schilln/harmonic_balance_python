@@ -11,6 +11,134 @@ array = ndarray | sparray
 # TODO: Fix the use of these type annotations.
 
 
+def compute_nlfr_curve(
+    num_points: int,
+    omega_i0: float,
+    b_ext: ndarray,
+    f_nl: abc.Callable[[ndarray, ndarray, int], ndarray],
+    df_nl_dx: abc.Callable[[ndarray, ndarray, int], ndarray],
+    df_nl_d_xdot: abc.Callable[[ndarray, ndarray, int], ndarray],
+    NH: int,
+    n: int,
+    N: int,
+    s: float,
+    M: ndarray,
+    C: ndarray,
+    K: ndarray,
+    tol: float = 1e-6,
+    max_iter: int = 100,
+) -> tuple[ndarray[complex], ndarray[float], ndarray[bool], ndarray[int]]:
+    """Compute solutions along nonlinear frequency response (NLFR) curve for
+    increasing values of fundamental forcing frequency omega.
+
+    Parameters
+    ----------
+    num_points
+        Number of points along solution curve to compute
+    omega_i0
+        First value of omega to solve
+    b_ext
+        Exponential Fourier coefficients of external force (see `get_b_ext`)
+        shape (n * (NH + 1),)
+    f_nl
+        Nonlinear force function in time domain
+        [(n * N,), (n * N,), int] -> (n * N,)
+    f_nl_dx
+        Derivative of f_nl with respect to x
+        [(n * N,), (n * N,), int] -> (n * N, n * N)
+    f_nl_d_xdot
+        Derivative of f_nl with respect to x'
+        [(n * N,), (n * N,), int] -> (n * N, n * N)
+    NH
+        Assumed highest harmonic index
+    n
+        Number of degrees of freedom
+    N
+        Number of points to sample in time domain
+    s
+        Goal distance between y_i1 and y_i0
+    M
+        Mass matrix
+        shape (n, n)
+    C
+        Damping matrix
+        shape (n, n)
+    K
+        Stiffness matrix
+        shape (n, n)
+    tol
+        Tolerance that relative error |rhs| / |y| must reach
+    max_iter
+        Maximum number of allowed iterations
+
+    Returns
+    -------
+    ys
+        Sequence of solutions along NLFR curve
+        shape (num_points, n * (NH + 1))
+    rel_errors
+        Sequence of relative errors
+    convergeds
+        Whether each iteration converged
+    iters
+        Number of iterations used to solve for each point on curve
+    """
+    ys = np.full((num_points, n * (NH + 1) + 1), np.inf, dtype=complex)
+    rel_errors = np.full(num_points, np.inf)
+    convergeds = np.full(num_points, False)
+    iters = np.full(num_points, -1)
+
+    omega = omega_i0
+    for i in range(2):
+        A = freq.get_A(omega, NH, M, C, K)
+        z, rhs, convergeds[i], iters[i] = solve.solve_nonlinear(
+            omega,
+            freq.solve_linear_system(A, b_ext),
+            A,
+            b_ext,
+            f_nl,
+            df_nl_dx,
+            df_nl_d_xdot,
+            NH,
+            n,
+            N,
+            tol,
+            max_iter=max_iter,
+        )
+        ys[i] = np.concat((z, [omega]))
+        rel_errors[i] = get_rel_error(rhs, ys[i])
+        if not convergeds[i]:
+            print(f"iteration {i:0>3} didn't converge")
+
+        omega += s
+
+    for i in range(2, num_points):
+        y_k0 = predict_y(ys[i - 1], ys[i - 2], s)
+
+        ys[i], rhs, convergeds[i], iters[i] = correct_y(
+            y_k0,
+            ys[i - 1],
+            b_ext,
+            f_nl,
+            df_nl_dx,
+            df_nl_d_xdot,
+            NH,
+            n,
+            N,
+            s,
+            M,
+            C,
+            K,
+            tol,
+            max_iter,
+        )
+        rel_errors[i] = get_rel_error(rhs, ys[i])
+        if not convergeds[i]:
+            print(f"iteration {i:0>3} didn't converge")
+
+    return ys, rel_errors, convergeds, iters
+
+
 def predict_y(
     y_i1: sparray | ndarray, y_i0: sparray | ndarray, s: float
 ) -> sparray | ndarray:

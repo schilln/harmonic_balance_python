@@ -2,5 +2,6 @@ arclength
 dofs
 Galerkin
 nabla
+nlfr
 Raphson
 xdot
