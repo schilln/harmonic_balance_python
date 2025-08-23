@@ -151,6 +151,7 @@ This yields the identities
 \end{align}
 
 \subsection{Performing the projection}
+\label{sec:projection}
 
 First, we rewrite \eqref{eq:system-time} using \eqref{eq:x(z)}, \eqref{eq:xp(z)}, and \eqref{eq:xpp(z)}, beginning with the first and using the mixed-product property of the Kronecker product:
 \begin{align}
@@ -225,6 +226,7 @@ Now we integrate \eqref{eq:system-time-kron} against $Q(t)^*$ to obtain an algeb
 \end{align*}
 Following the same process for the other terms in \eqref{eq:system-time-kron}, we at last obtain
 \begin{align}
+  \label{eq:system}
   \bbrack*{
     \omega^2 \nabla^2 \otimes M
     + \omega \nabla \otimes C
@@ -615,32 +617,33 @@ We can write the forces similarly:
   &= \db_0 + 2 \sum_{k=1}^{N_H} \Re \bbrack{\db_k \exp\paren{i k \omega t}} \\
   &= 2 \sum_{k=0}^{N_H} \Re \bbrack*{\wh \db_k \exp\paren{i k \omega t}}.
 \end{align*}
-We store the Fourier coefficients
+If we write $H \coloneq \diag(1/2, 1, \ldots, 1)_{N_H + 1} \otimes I_n$, then we can store the Fourier coefficients
 \begin{align*}
   \wh \z &\coloneq
   \begin{bmatrix}
-    \ab_0\trp / 2 & \ab_1\trp & \cdots & \ab_{N_H}\trp
+    \wh \ab_0\trp & \wh \ab_1\trp & \cdots & \wh \ab_{N_H}\trp
   \end{bmatrix}\trp \in \C^{n\paren{N_H + 1}} \\
   &=
   \begin{bmatrix}
-    \wh \ab_0\trp & \wh \ab_1\trp & \cdots & \wh \ab_{N_H}\trp
-  \end{bmatrix}\trp \\
+    \ab_0\trp / 2 & \ab_1\trp & \cdots & \ab_{N_H}\trp
+  \end{bmatrix}\trp = H \z \\
   \wh \bb\ts{nl} &\coloneq
-  \begin{bmatrix}
-    \cb_0\trp / 2 & \cb_1\trp & \cdots & \cb_{N_H}\trp
-  \end{bmatrix}\trp \\
-  &=
   \begin{bmatrix}
     \wh \cb_0\trp & \wh \cb_1\trp & \cdots & \wh \cb_{N_H}\trp
   \end{bmatrix}\trp \\
+  &=
+  \begin{bmatrix}
+    \cb_0\trp / 2 & \cb_1\trp & \cdots & \cb_{N_H}\trp
+  \end{bmatrix}\trp = H \bb\ts{nl}
+  \\
   \wh \bb\ts{ext} &\coloneq
   \begin{bmatrix}
-    \db_0\trp / 2 & \db_1\trp & \cdots & \db_{N_H}\trp
+    \wh \db_0\trp & \wh \db_1\trp & \cdots & \wh \db_{N_H}\trp
   \end{bmatrix}\trp \\
   &=
   \begin{bmatrix}
-    \wh \db_0\trp & \wh \db_1\trp & \cdots & \wh \db_{N_H}\trp
-  \end{bmatrix}\trp
+    \db_0\trp / 2 & \db_1\trp & \cdots & \db_{N_H}\trp
+  \end{bmatrix}\trp = H \bb\ts{ext}
 \end{align*}
 and again write $\wh \bb(\z, \omega) = \wh \bb\ts{ext}(\omega) - \wh \bb\ts{nl}(\z)$.
 
@@ -674,7 +677,7 @@ We also have
 We arrive at the system
 \begin{align}
   \label{eq:system-time-kron-real}
-  \Re
+  2 \Re
   \bbrack*{
     \paren*{
       \omega^2 \paren*{\wh Q(t) \wh \nabla^2} \otimes M
@@ -685,7 +688,7 @@ We arrive at the system
   }
   = 0.
 \end{align}
-Defining
+We define
 \begin{align}
   \widetilde {\wh \nabla}
   &\coloneq
@@ -693,45 +696,146 @@ Defining
     0 & i & \cdots & i N_H
   \end{bmatrix} \\
   \label{eq:nabla-real}
-  \wh \nabla &\coloneq \diag{\widetilde {\wh \nabla}},
+  \wh \nabla &\coloneq \diag{\widetilde {\wh \nabla}}.
 \end{align}
-Fourier--Galerkin projection then transforms the argument to the real part operator
+We then perform Fourier--Galerkin projection on the system.
+We project the first term after rewriting the real operator as a sum of the term and its complex conjugate:
 \begin{align*}
+  &\phantom{{}={}} \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \wh Q(t)^*
+  2 \Re \big[
+    \omega^2 \paren*{\wh Q(t) \nabla^2} \otimes M
+  \big] \, dt \\
+  &= \frac \omega{2 \pi} \int_0^{2 \pi / \omega} Q(t)^* \bbrack*{
+    \omega^2 \paren*{\wh Q(t) \nabla^2} \otimes M
+    + \overline{\omega^2 \paren*{\wh Q(t) \nabla^2} \otimes M}
+  } \, dt \\
+  &= \omega^2 \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \paren*{
+    \wh Q(t)^* \bbrack*{
+      \paren*{\wh Q(t) \nabla^2} \otimes M
+    } + \wh Q(t)^* \bbrack*{
+      \overline{\paren*{\wh Q(t) \nabla^2}} \otimes M
+    }
+  } \, dt.
+\end{align*}
+The first summand works out to $\omega^2 \wh \nabla^2 \otimes M$, the only difference in the derivation from that in \ref{sec:projection} being $\wh Q$ instead of $Q$.
+For the second summand, we find
+\begin{align*}
+  &\phantom{{}={}} \omega^2 \frac \omega{2 \pi} \int_0^{2 \pi / \omega}
+  \wh Q(t)^*
   \bbrack*{
+    \overline{\paren*{\wh Q(t) \nabla^2}} \otimes M
+  } \, dt \\
+  &= \omega^2 \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \bbrack*{
+    \wh Q(t)^* \otimes 1
+  } \bbrack*{
+    \overline{\paren*{\wh Q(t) \nabla^2}} \otimes M
+  } \, dt \\
+  &= \omega^2 \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \bbrack*{
+    \wh Q(t)^* \overline{\paren*{\wh Q(t) \nabla^2}}
+  } \otimes \bbrack*{
+    1 M
+  } \, dt \\
+  &= \omega^2 \bbrack*{
+    \frac \omega{2 \pi}
+    \int_0^{2 \pi / \omega}
+    \wh Q(t)^* \overline{\wh Q(t)} \, dt \; \overline{\nabla^2}
+  } \otimes M \\
+  &= \omega^2 \big[ \diag(1, 0, \dots, 0)_{N_H + 1} \; \overline{\nabla^2} \big] \otimes M \\
+  &= 0_{N_H + 1}.
+\end{align*}
+Note that each entry of the integral on the third-to-last line is of the form $\inpr{\exp(i k \omega t),\; \exp(-i \ell \omega t)} = \delta_{k(-\ell)}$, and since $k, \ell \ge 0$, only the (0, 0) entry is 1.
+On the other hand $\overline{\nabla^2}_{0, 0} = 0$, so the entire expression is zero.
+
+Moving on to the other terms in \eqref{eq:system-time-kron-real}, the non-complex conjugated terms work out as in \ref{sec:projection}.
+The complex conjugate of the second term, $\omega \paren*{\wh Q(t) \wh \nabla} \otimes C$, works out to zero like the first term.
+We now look at the last two terms.
+\begin{align*}
+  &\phantom{{}={}} \frac \omega{2 \pi} \int_0^{2 \pi / \omega}
+  \wh Q(t)^*
+  \bbrack*{
+    \overline{\wh Q(t)} \otimes K
+  } \, dt \\
+  &= \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \bbrack*{
+    \wh Q(t)^* \otimes 1
+  } \bbrack*{
+    \overline{\wh Q(t)} \otimes K
+  } \, dt \\
+  &= \frac \omega{2 \pi} \int_0^{2 \pi / \omega} \bbrack*{
+    \wh Q(t)^* \overline{\wh Q(t)}
+  } \otimes \bbrack*{
+    1 K
+  } \, dt \\
+  &= \bbrack*{
+    \frac \omega{2 \pi}
+    \int_0^{2 \pi / \omega}
+    \wh Q(t)^* \overline{\wh Q(t)} \, dt
+  } \otimes K \\
+  &= \diag(1, 0, \dots, 0)_{N_H + 1} \otimes K.
+\end{align*}
+The final term (involving $\wh \bb$) becomes $\diag(1, 0, \dots, 0)_{N_H + 1} \otimes I_n$.
+
+Summing the results from the non-complex conjugated terms and the conjugated terms, our algebraic system is
+\begin{align*}
+  \paren*{
+    \omega^2 \wh \nabla^2 \otimes M
+    + \omega \wh \nabla \otimes C
+    + \diag(2, 1, \dots, 1)_{N_H + 1} \otimes K
+  } \wh \z
+  - (\diag(2, 1, \dots, 1)_{N_H + 1} \otimes I_n) \wh \bb
+  = 0.
+\end{align*}
+However, we can simplify this in a fortunate (and perhaps surprising) way.
+\begin{align*}
+  &\phantom{{}={}}
+  \paren*{\diag(2, 1, \dots, 1)_{N_H + 1} \otimes I_n} \wh \bb \\
+  &= \paren*{\diag(2, 1, \dots, 1)_{N_H + 1} \otimes I_n} H \bb \\
+  &= \paren*{\diag(2, 1, \dots, 1)_{N_H + 1} \otimes I_n}
+  \paren*{\diag(1/2, 1, \ldots, 1)_{N_H + 1} \otimes I_n} \bb \\
+  &= \bb
+\end{align*}
+\begin{align*}
+  &\phantom{{}={}} \paren*{
+    \omega^2 \wh \nabla^2 \otimes M
+    + \omega \wh \nabla \otimes C
+    + \diag(2, 1, \dots, 1)_{N_H + 1} \otimes K
+  } \wh \z \\
+  &= \paren*{
+    \omega^2 \wh \nabla^2 \otimes M
+    + \omega \wh \nabla \otimes C
+    + \diag(2, 1, \dots, 1)_{N_H + 1} \otimes K
+  } H \z \\
+  &=
+  \paren*{
+    \omega^2 \wh \nabla^2 \otimes M
+    + \omega \wh \nabla \otimes C
+    + \diag(2, 1, \dots, 1)_{N_H + 1} \otimes K
+  }
+  \paren*{
+    \diag(1/2, 1, \ldots, 1)_{N_H + 1} \otimes I_n
+  } \z \\
+  &= \bbrack*{
+    \omega^2 \paren*{\diag(1/2, 1, \ldots, 1)_{N_H + 1} \wh \nabla^2} \otimes M
+    + \omega \paren*{\diag(1/2, 1, \ldots, 1)_{N_H + 1} \wh \nabla} \otimes C
+    + I_{N_H + 1} \otimes K
+  } \z \\
+  &= \bbrack*{
     \omega^2 \wh \nabla^2 \otimes M
     + \omega \wh \nabla \otimes C
     + I_{N_H + 1} \otimes K
-  } \wh \z
-  - \wh \bb
-  = 0.
+  } \z.
 \end{align*}
-We define $\wh A(\omega) \coloneq \bbrack*{
+
+We define $\wh A(\omega) \coloneq \paren*{
   \omega^2 \wh \nabla^2 \otimes M
   + \omega \wh \nabla \otimes C
   + I_{N_H + 1} \otimes K
 }$
 and obtain the system
-\begin{align*}
-  \Re
-  \bbrack*{
-    \wh A(\omega)
-    \wh \z
-    - \wh \bb
-  }
-  = 0,
-\end{align*}
-or equivalently,
-\begin{align*}
-  \wh A(\omega)
-  \wh \z
-  - \wh \bb
-  + \overline{
-    \wh A(\omega)
-    \wh \z
-    - \wh \bb
-  }
-  = 0
-\end{align*}
+\begin{align}
+  \label{eq:system-real}
+  \wh A(\omega) \z = \bb.
+\end{align}
+Note the wonderful similarity to \eqref{eq:system-time}.
 
 \subsection{Computing the nonlinear force}
 
@@ -777,23 +881,8 @@ Similarly, defining
 \end{align}
 leads to
 \begin{align*}
-  \wh \Gamma^\dagger \x_s &= \z.
-\end{align*}
-Note this is $\z$, \textit{not} $\wh \z$.
-For $\wh \z$, we compute
-\begin{align*}
-  &\phantom{{}={}}
-  \diag(1/2, 1, \ldots, 1)
-  \wh \Gamma^\dagger \x_s \\
-  &=
-  \begin{bmatrix}
-    1/2 & 1 & \cdots & 1
-  \end{bmatrix}\trp \odot \paren*{\wh \Gamma^\dagger \x_s} \\
-  &=
-  \begin{bmatrix}
-    1/2 & 1 & \cdots & 1
-  \end{bmatrix}\trp \odot \z \\
-  &= \wh \z.
+  \wh \Gamma^\dagger \x_s &= \z \\
+  H \wh \Gamma^\dagger \x_s &= \wh \z.
 \end{align*}
 We then can write
 \begin{align}
@@ -805,54 +894,37 @@ We then can write
 \end{align}
 Additionally, we have
 \begin{align}
-  \nonumber
-  \wh \bb\ts{nl}(\z)
-  &= \diag(1/2, 1, \ldots, 1) \;
-  \Gamma^\dagger \; \f\ts{nl} \big(
-    \x_s,\; \dot \x_s
-  \big) \\
   \label{eq:b_nl-aft-real}
-  &= \diag(1/2, 1, \ldots, 1) \;
-  \Gamma^\dagger \; \f\ts{nl} \; \paren*{
-    2 \Re \bbrack*{\wh \Gamma \wh \z},\;
-    2 \omega \Re \bbrack*{\wh \Gamma (\wh \nabla \otimes I_n) \wh \z}
-  }.
+  \bb\ts{nl}(\z)
+  &= \Gamma^\dagger \; \f\ts{nl} \big(
+    \x_s,\; \dot \x_s
+  \big).
 \end{align}
 
 \subsection{Solving the equation}
 
-Define the residual equation
+Define the residual
 \begin{align}
-  \wh \Rb(\wh \z)
-  &\coloneq 2 \Re \bbrack*{\wh A(\omega) \wh \z
-    + \wh \bb\ts{nl}
-  - \wh \bb\ts{ext}} \\
-  &= \wh A(\omega) \wh \z
-  + \wh \bb\ts{nl}
-  - \wh \bb\ts{ext}
-  + \overline{\wh A(\omega) \wh \z
-    + \wh \bb\ts{nl}
-  - \wh \bb\ts{ext}}.
+  \wh \Rb(\wh \z) \coloneq \wh A(\omega) \z - \bb.
 \end{align}
 We need to compute
-% TODO: Is this differentiation right? And the same question for the nonlinear force...
 \begin{align*}
-  \wh \Rb_{\wh \z}(\wh \z) = \wh A(\omega) + \frac {d \wh \bb\ts{nl}(\wh \z)}{d \wh \z}.
+  \wh \Rb_{\z}(\z) = \wh A(\omega) + \frac {d \bb\ts{nl}(\z)}{d \z}.
 \end{align*}
 Observe,
 \begin{align*}
-  \frac {d \wh \bb\ts{nl}(\wh \z)}{d \wh \z}
-  &= \frac d{d \wh \z} \bigg[
-    \diag(1/2, 1, \ldots, 1) \Gamma^\dagger \f\ts{nl} \paren{\x_s,\; \dot \x_s}
+  \frac {d \bb\ts{nl}(\z)}{d \z}
+  &= \frac d{d \z} \bigg[
+    \Gamma^\dagger \f\ts{nl} \paren{\x_s,\; \dot \x_s}
   \bigg] \\
-  &= \diag(1/2, 1, \ldots, 1) \Gamma^\dagger \frac d{d \wh \z} \bigg[
+  &= \Gamma^\dagger \frac d{d \z} \bigg[
     \f\ts{nl} \paren{\x_s,\; \dot \x_s}
   \bigg] \\
-  &= \diag(1/2, 1, \ldots, 1) \Gamma^\dagger \bigg[
-    \frac d{d \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \frac {d \x_s}{d \wh \z}
-    + \frac d{d \dot \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \frac {d \dot \x_s}{d \wh \z}
+  &= \Gamma^\dagger \bigg[
+    \frac d{d \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \frac {d \x_s}{d \z}
+    + \frac d{d \dot \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \frac {d \dot \x_s}{d \z}
   \bigg] \\
-  &= \diag(1/2, 1, \ldots, 1) \Gamma^\dagger \bigg[
+  &= \Gamma^\dagger \bigg[
     \frac d{d \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \wh \Gamma
     + \omega \frac d{d \dot \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \wh \Gamma (\wh \nabla \otimes I_n)
   \bigg].
