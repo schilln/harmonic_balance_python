@@ -27,6 +27,9 @@ def compute_nlfr_curve(
     K: ndarray,
     tol: float = 1e-6,
     max_iter: int = 100,
+    optimal_num_steps: int = 10,
+    min_step_size: float = 1e-3,
+    max_step_size: float = 5e-1,
 ) -> tuple[ndarray[complex], ndarray[float], ndarray[bool], ndarray[int]]:
     """Compute solutions along nonlinear frequency response (NLFR) curve for
     increasing values of fundamental forcing frequency omega.
@@ -69,7 +72,11 @@ def compute_nlfr_curve(
     tol
         Tolerance that relative error |rhs| / |y| must reach
     max_iter
-        Maximum number of allowed iterations
+        Maximum number of allowed correction iterations
+    optimal_num_steps
+        Optimal number of correction iterations
+    min_step_size, max_step_size
+        Minimum and maximum step size `s`
 
     Returns
     -------
@@ -110,6 +117,9 @@ def compute_nlfr_curve(
         if not convergeds[i]:
             print(f"iteration {i:0>3} didn't converge")
 
+        s = update_step_size(
+            optimal_num_steps, iters[i], s, min_step_size, max_step_size
+        )
         omega += s
 
     for i in range(2, num_points):
@@ -136,7 +146,63 @@ def compute_nlfr_curve(
         if not convergeds[i]:
             print(f"iteration {i:0>3} didn't converge")
 
+        s = update_step_size(
+            optimal_num_steps, iters[i], s, min_step_size, max_step_size
+        )
+
     return ys, rel_errors, convergeds, iters
+
+
+def update_step_size(
+    optimal_num_steps: int,
+    num_steps: int,
+    s: float,
+    min_step_size: float = 1e-3,
+    max_step_size: float = 5e-1,
+):
+    """Compute the updated step size.
+
+    Parameters
+    ----------
+    optimal_num_steps
+        Optimal number of correction iterations
+    num_steps
+        Number of correction iterations used
+    s
+        Current step size
+    min_step_size, max_step_size
+        Minimum and maximum step size `s`
+
+    Returns
+    -------
+    s_new
+        New step size
+    """
+    s_new = s * compute_step_multiplier(optimal_num_steps, num_steps, s)
+    if s_new < min_step_size or max_step_size < s_new:
+        return s
+    else:
+        return s_new
+
+
+def compute_step_multiplier(optimal_num_steps: int, num_steps: int, s: float):
+    """Compute the factor by which to multiply the step size.
+
+    Parameters
+    ----------
+    optimal_num_steps
+        Optimal number of correction iterations
+    num_steps
+        Number of correction iterations used
+    s
+        Current step size
+
+    Returns
+    -------
+    multiplier
+        Factor by which to multiply the step size, i.e., s_new = s * update
+    """
+    return 2 ** ((optimal_num_steps - num_steps) / optimal_num_steps)
 
 
 def predict_y(
