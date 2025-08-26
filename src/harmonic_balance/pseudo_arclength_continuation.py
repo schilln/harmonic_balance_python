@@ -114,7 +114,8 @@ def compute_nlfr_curve(
             max_iter=max_iter,
         )
         ys[i] = np.concat((z, [omega]))
-        rel_errors[i] = get_rel_error(rhs, ys[i])
+        b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
+        rel_errors[i] = get_rel_error(rhs, b_nl + b_ext)
         if not convergeds[i]:
             print(f"iteration {i:0>3} didn't converge")
 
@@ -158,7 +159,7 @@ def compute_nlfr_curve(
             print(traceback.format_exc())
             return ys, rel_errors, convergeds, iters
 
-        rel_errors[i] = get_rel_error(rhs, ys[i])
+        rel_errors[i] = get_rel_error(rhs, b_nl + b_ext)
         if not convergeds[i]:
             print(f"iteration {i:0>3} didn't converge")
 
@@ -365,7 +366,7 @@ def correct_y(
     R = solve.get_R(z, A, b_nl, b_ext)
     # At the first iteration, the dot product computed by `get_P` is zero since
     # the difference in the dot product is zero.
-    if get_rel_error(R, y) < tol:
+    if get_rel_error(R, b_nl + b_ext) < tol:
         return y, R, True, 0
 
     converged = False
@@ -396,29 +397,29 @@ def correct_y(
         P = get_P(y, y_k0, V)
         rhs = get_rhs(R, P)
 
-        if get_rel_error(rhs, y) < tol:
+        if get_rel_error(rhs, b_nl + b_ext) < tol:
             converged = True
             break
 
     return y, rhs, converged, i + 1 if "i" in locals() else 0
 
 
-def get_rel_error(rhs: ndarray, y: ndarray) -> float:
-    """Compute the relative error |rhs| / |y|.
+def get_rel_error(rhs: ndarray, w: ndarray) -> float:
+    """Compute the relative error |rhs| / |w|.
 
     Parameters
     ----------
     rhs
         Residual rhs = [R, P]
-    y
-        Solution
+    w
+        Vector by which to normalize (e.g., solution y or force b_nl + b_ext)
 
     Returns
     -------
     rel_error
-        Relative error |rhs| / |y|
+        Relative error |rhs| / |w|
     """
-    return np.linalg.norm(rhs) / np.linalg.norm(y)
+    return np.linalg.norm(rhs) / np.linalg.norm(w)
 
 
 def get_P(
