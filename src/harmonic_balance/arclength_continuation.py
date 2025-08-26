@@ -184,14 +184,14 @@ def update_step_size(
     s_new
         New step size
     """
-    s_new = s * compute_step_multiplier(optimal_num_steps, num_steps, s)
+    s_new = s * compute_step_multiplier(optimal_num_steps, num_steps)
     if s_new < min_step_size or max_step_size < s_new:
         return s
     else:
         return s_new
 
 
-def compute_step_multiplier(optimal_num_steps: int, num_steps: int, s: float):
+def compute_step_multiplier(optimal_num_steps: int, num_steps: int):
     """Compute the factor by which to multiply the step size.
 
     Parameters
@@ -200,8 +200,6 @@ def compute_step_multiplier(optimal_num_steps: int, num_steps: int, s: float):
         Optimal number of correction iterations
     num_steps
         Number of correction iterations used
-    s
-        Current step size
 
     Returns
     -------
