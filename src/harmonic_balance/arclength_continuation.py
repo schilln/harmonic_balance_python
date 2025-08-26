@@ -165,7 +165,7 @@ def update_step_size(
     s: float,
     min_step_size: float = 1e-3,
     max_step_size: float = 5e-1,
-):
+) -> float:
     """Compute the updated step size.
 
     Parameters
@@ -191,7 +191,7 @@ def update_step_size(
         return s_new
 
 
-def compute_step_multiplier(optimal_num_steps: int, num_steps: int):
+def compute_step_multiplier(optimal_num_steps: int, num_steps: int) -> float:
     """Compute the factor by which to multiply the step size.
 
     Parameters
