@@ -258,7 +258,7 @@ def correct_y(
     Parameters
     ----------
     y_i1_k0
-        Predicted solution y_ik, i = 2, k = 0
+        Predicted solution y_ik, i = 1, k = 0
     y_i0
         Previous solution along nonlinear frequency response curve y_i, i = 0.
     b_ext
