@@ -361,7 +361,8 @@ def correct_y(
 
     omega, z = y[-1].real, y[:-1]
     A = freq.get_A(omega, NH, M, C, K)
-    R = solve.get_R(z, omega, A, f_nl, b_ext, NH, n, N)
+    b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
+    R = solve.get_R(z, A, b_nl, b_ext)
     # At the first iteration, the dot product computed by `get_P` is zero since
     # the difference in the dot product is zero.
     if get_rel_error(R, y) < tol:
@@ -390,7 +391,8 @@ def correct_y(
 
         omega, z = y[-1].real, y[:-1]
 
-        R = solve.get_R(z, omega, A, f_nl, b_ext, NH, n, N)
+        b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
+        R = solve.get_R(z, A, b_nl, b_ext)
         P = get_P(y, y_k0, V)
         rhs = get_rhs(R, P)
 
@@ -475,7 +477,8 @@ def _solve_step(
     """
     omega, z = y[-1].real, y[:-1]
 
-    R = solve.get_R(z, omega, A, f_nl, b_ext, NH, n, N)
+    b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
+    R = solve.get_R(z, A, b_nl, b_ext)
     P = get_P(y, y_k0, V)
     rhs = get_rhs(R, P)
 

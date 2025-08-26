@@ -13,15 +13,10 @@ array = ndarray | sparray
 
 def get_R(
     z: sparray | ndarray,
-    omega: float,
     A: sparray,
-    f_nl: abc.Callable[[ndarray, ndarray, int], ndarray],
+    b_nl: sparray,
     b_ext: sparray,
-    NH: int,
-    n: int,
-    N: int,
 ) -> sparray:
-    b_nl = get_b_nl(z, omega, f_nl, NH, n, N)
     return A @ z + b_nl - b_ext
 
 
@@ -180,7 +175,8 @@ def solve_nonlinear(
     i
         Number of iterations
     """
-    R = get_R(z0, omega, A, f_nl, b_ext, NH, n, N)
+    b_nl = get_b_nl(z0, omega, f_nl, NH, n, N)
+    R = get_R(z0, A, b_nl, b_ext)
     if get_rel_error(R, z0) < tol:
         return z0, R, True, 0
 
@@ -190,7 +186,8 @@ def solve_nonlinear(
         z += _solve_nonlinear_step(
             omega, z, A, b_ext, f_nl, df_nl_dx, df_nl_d_xdot, NH, n, N
         )
-        R = get_R(z, omega, A, f_nl, b_ext, NH, n, N)
+        b_nl = get_b_nl(z, omega, f_nl, NH, n, N)
+        R = get_R(z, A, b_nl, b_ext)
 
         if get_rel_error(R, z) < tol:
             converged = True
@@ -220,7 +217,8 @@ def _solve_nonlinear_step(
     """
     db_nl_dz = get_db_nl_dz(omega, z, df_nl_dx, df_nl_d_xdot, NH, n, N)
 
-    R = get_R(z, omega, A, f_nl, b_ext, NH, n, N)
+    b_nl = get_b_nl(z, omega, f_nl, NH, n, N)
+    R = get_R(z, A, b_nl, b_ext)
     dR_dz = get_dR_dz(A, db_nl_dz)
 
     return np.linalg.solve(dR_dz, -R)

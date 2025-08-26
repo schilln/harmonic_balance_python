@@ -310,7 +310,8 @@ def correct_y(
 
     omega, z = y[-1].real, y[:-1]
     A = freq.get_A(omega, NH, M, C, K)
-    R = solve.get_R(z, omega, A, f_nl, b_ext, NH, n, N)
+    b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
+    R = solve.get_R(z, A, b_nl, b_ext)
     P = get_P(y, y_i0, s)
     rhs = get_rhs(R, P)
     if get_rel_error(rhs, y) < tol:
@@ -339,7 +340,8 @@ def correct_y(
 
         omega, z = y[-1].real, y[:-1]
 
-        R = solve.get_R(z, omega, A, f_nl, b_ext, NH, n, N)
+        b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
+        R = solve.get_R(z, A, b_nl, b_ext)
         P = get_P(y, y_i0, s)
         rhs = get_rhs(R, P)
 
@@ -438,7 +440,8 @@ def _solve_step(
     omega_i1, z_i1 = y_i1[-1].real, y_i1[:-1]
     omega_i0, z_i0 = y_i0[-1].real, y_i0[:-1]
 
-    R = solve.get_R(z_i1, omega_i1, A, f_nl, b_ext, NH, n, N)
+    b_nl = solve.get_b_nl(z_i1, omega_i1, f_nl, NH, n, N)
+    R = solve.get_R(z_i1, A, b_nl, b_ext)
     P = get_P(y_i1, y_i0, s)
     rhs = get_rhs(R, P)
 
