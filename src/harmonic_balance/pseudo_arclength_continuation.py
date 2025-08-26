@@ -97,42 +97,43 @@ def compute_nlfr_curve(
     iters = np.full(num_points, -1)
 
     omega = omega_i0
-    i = 0
-    A = freq.get_A(omega, NH, M, C, K)
-    z, rhs, convergeds[i], iters[i] = solve.solve_nonlinear(
-        omega,
-        freq.solve_linear_system(A, b_ext),
-        A,
-        b_ext,
-        f_nl,
-        df_nl_dx,
-        df_nl_d_xdot,
-        NH,
-        n,
-        N,
-        tol,
-        max_iter=max_iter,
-    )
-    ys[i] = np.concat((z, [omega]))
-    rel_errors[i] = get_rel_error(rhs, ys[i])
-    if not convergeds[i]:
-        print(f"iteration {i:0>3} didn't converge")
+    for i in range(2):
+        A = freq.get_A(omega, NH, M, C, K)
+        z, rhs, convergeds[i], iters[i] = solve.solve_nonlinear(
+            omega,
+            freq.solve_linear_system(A, b_ext),
+            A,
+            b_ext,
+            f_nl,
+            df_nl_dx,
+            df_nl_d_xdot,
+            NH,
+            n,
+            N,
+            tol,
+            max_iter=max_iter,
+        )
+        ys[i] = np.concat((z, [omega]))
+        rel_errors[i] = get_rel_error(rhs, ys[i])
+        if not convergeds[i]:
+            print(f"iteration {i:0>3} didn't converge")
 
-    s = update_step_size(
-        optimal_num_steps, iters[i], s, min_step_size, max_step_size
-    )
+        s = update_step_size(
+            optimal_num_steps, iters[i], s, min_step_size, max_step_size
+        )
+        omega += s
 
-    # Get the first tangent vector. We don't constrain this vector to be in the
-    # same direction as a previous tangent since there isn't one.
-    db_nl_dz = solve.get_db_nl_dz(omega, z, df_nl_dx, df_nl_d_xdot, NH, n, N)
-    dR_dz = solve.get_dR_dz(A, db_nl_dz)
-    dR_d_omega = continuation.get_dR_d_omega(
-        z, omega, df_nl_d_xdot, NH, n, N, M, C
-    )
-    mat = np.concat((dR_dz, dR_d_omega))
-    V_i0 = np.linalg.solve(mat, np.zeros_like(ys[i]))
+    # Estimate the first tangent vector with a secant vector.
+    V_i0 = ys[1] - ys[0]
 
-    for i in range(1, num_points):
+    for i in range(2, num_points):
+        db_nl_dz = solve.get_db_nl_dz(
+            omega, z, df_nl_dx, df_nl_d_xdot, NH, n, N
+        )
+        dR_dz = solve.get_dR_dz(A, db_nl_dz)
+        dR_d_omega = continuation.get_dR_d_omega(
+            z, omega, df_nl_d_xdot, NH, n, N, M, C
+        )
         V_i1 = compute_tangent(dR_dz, dR_d_omega, V_i0)
         y_k0 = predict_y(ys[i - 1], V_i1, s)
 
@@ -195,11 +196,11 @@ def update_step_size(
     s_new
         New step size
     """
-    s_new = s * compute_step_multiplier(optimal_num_steps, num_steps)
+    s_new = s * compute_step_multiplier(optimal_num_steps, num_steps, s)
     if s_new < min_step_size:
-        return s_new * min_step_size
+        return min_step_size
     elif max_step_size < s_new:
-        return s_new * max_step_size
+        return max_step_size
     else:
         return s_new
 
@@ -225,7 +226,7 @@ def compute_step_multiplier(
     multiplier
         Factor by which to multiply the step size, i.e., s_new = s * update
     """
-    scale = optimal_num_steps / num_steps
+    scale = optimal_num_steps / (num_steps + 1)
     return scale * s
 
 
@@ -279,7 +280,7 @@ def compute_tangent(
         Current tangent vector
         shape (n(NH + 1) + 1,)
     """
-    mat = np.block([[dR_dz, dR_d_omega], [V_i0]])
+    mat = np.block([[dR_dz, dR_d_omega.reshape(-1, 1)], [V_i0]])
     rhs = np.zeros_like(V_i0)
     rhs[-1] = 1
     V_i1 = np.linalg.solve(mat, rhs)
