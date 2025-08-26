@@ -220,6 +220,8 @@ def predict_y(
     y_i1, y_i0
         Previous solutions y_i = [z_i, omega_i], i = 0, 1
         shape (n(NH + 1) + 1,)
+    s
+        Step size
 
     Returns
     -------
