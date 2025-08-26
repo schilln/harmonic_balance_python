@@ -185,10 +185,10 @@ def update_step_size(
         New step size
     """
     s_new = s * compute_step_multiplier(optimal_num_steps, num_steps)
-    if abs(s_new) < min_step_size:
-        return np.sign(s_new) * min_step_size
-    elif max_step_size < abs(s_new):
-        return np.sign(s_new) * max_step_size
+    if s_new < min_step_size:
+        return s_new * min_step_size
+    elif max_step_size < s_new:
+        return s_new * max_step_size
     else:
         return s_new
 
@@ -197,8 +197,6 @@ def compute_step_multiplier(
     optimal_num_steps: int,
     num_steps: int,
     s: float,
-    V_i0: ndarray,
-    V_i1: ndarray,
 ) -> float:
     """Compute the factor by which to multiply the step size.
 
@@ -210,9 +208,6 @@ def compute_step_multiplier(
         Number of correction iterations used
     s
         Previous step size
-    V_i0, V_i1
-        Previous and current tangent vectors
-        shape (n * (NH + 1) + 1,)
 
     Returns
     -------
@@ -220,8 +215,7 @@ def compute_step_multiplier(
         Factor by which to multiply the step size, i.e., s_new = s * update
     """
     scale = optimal_num_steps / num_steps
-    sign = np.sign(s * V_i1 @ V_i0)
-    return scale * sign * s
+    return scale * s
 
 
 def predict_y(
