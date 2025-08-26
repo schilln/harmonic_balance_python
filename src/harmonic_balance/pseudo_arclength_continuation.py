@@ -97,39 +97,49 @@ def compute_nlfr_curve(
     iters = np.full(num_points, -1)
 
     omega = omega_i0
-    for i in range(2):
-        A = freq.get_A(omega, NH, M, C, K)
-        z, rhs, convergeds[i], iters[i] = solve.solve_nonlinear(
-            omega,
-            freq.solve_linear_system(A, b_ext),
-            A,
-            b_ext,
-            f_nl,
-            df_nl_dx,
-            df_nl_d_xdot,
-            NH,
-            n,
-            N,
-            tol,
-            max_iter=max_iter,
-        )
-        ys[i] = np.concat((z, [omega]))
-        rel_errors[i] = get_rel_error(rhs, ys[i])
-        if not convergeds[i]:
-            print(f"iteration {i:0>3} didn't converge")
+    i = 0
+    A = freq.get_A(omega, NH, M, C, K)
+    z, rhs, convergeds[i], iters[i] = solve.solve_nonlinear(
+        omega,
+        freq.solve_linear_system(A, b_ext),
+        A,
+        b_ext,
+        f_nl,
+        df_nl_dx,
+        df_nl_d_xdot,
+        NH,
+        n,
+        N,
+        tol,
+        max_iter=max_iter,
+    )
+    ys[i] = np.concat((z, [omega]))
+    rel_errors[i] = get_rel_error(rhs, ys[i])
+    if not convergeds[i]:
+        print(f"iteration {i:0>3} didn't converge")
 
-        s = update_step_size(
-            optimal_num_steps, iters[i], s, min_step_size, max_step_size
-        )
-        omega += s
+    s = update_step_size(
+        optimal_num_steps, iters[i], s, min_step_size, max_step_size
+    )
 
-    for i in range(2, num_points):
-        y_k0 = predict_y(ys[i - 1], ys[i - 2], s)
+    # Get the first tangent vector. We don't constrain this vector to be in the
+    # same direction as a previous tangent since there isn't one.
+    db_nl_dz = solve.get_db_nl_dz(omega, z, df_nl_dx, df_nl_d_xdot, NH, n, N)
+    dR_dz = solve.get_dR_dz(A, db_nl_dz)
+    dR_d_omega = continuation.get_dR_d_omega(
+        z, omega, df_nl_d_xdot, NH, n, N, M, C
+    )
+    mat = np.concat((dR_dz, dR_d_omega))
+    V_i0 = np.linalg.solve(mat, np.zeros_like(ys[i]))
+
+    for i in range(1, num_points):
+        V_i1 = compute_tangent(dR_dz, dR_d_omega, V_i0)
+        y_k0 = predict_y(ys[i - 1], V_i1, s)
 
         try:
             ys[i], rhs, convergeds[i], iters[i] = correct_y(
                 y_k0,
-                ys[i - 1],
+                V_i1,
                 b_ext,
                 f_nl,
                 df_nl_dx,
@@ -137,7 +147,6 @@ def compute_nlfr_curve(
                 NH,
                 n,
                 N,
-                s,
                 M,
                 C,
                 K,
@@ -155,6 +164,8 @@ def compute_nlfr_curve(
         s = update_step_size(
             optimal_num_steps, iters[i], s, min_step_size, max_step_size
         )
+
+        V_i0 = V_i1.copy()
 
     return ys, rel_errors, convergeds, iters
 
