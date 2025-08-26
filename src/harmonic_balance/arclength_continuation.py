@@ -318,8 +318,6 @@ def correct_y(
 
     converged = False
     for i in range(max_iter):
-        omega = y[-1].real
-
         A = freq.get_A(omega, NH, M, C, K)
         step = _solve_step(
             y,
