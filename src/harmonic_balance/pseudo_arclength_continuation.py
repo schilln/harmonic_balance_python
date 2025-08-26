@@ -29,7 +29,7 @@ def compute_nlfr_curve(
     tol: float = 1e-6,
     max_iter: int = 100,
     optimal_num_steps: int = 3,
-    min_step_size: float = 1e-3,
+    min_step_size: float = 5e-4,
     max_step_size: float = 5e-1,
 ) -> tuple[ndarray[complex], ndarray[float], ndarray[bool], ndarray[int]]:
     """Compute solutions along nonlinear frequency response (NLFR) curve for
@@ -177,7 +177,7 @@ def update_step_size(
     optimal_num_steps: int,
     num_steps: int,
     s: float,
-    min_step_size: float = 1e-3,
+    min_step_size: float = 5e-4,
     max_step_size: float = 5e-1,
 ):
     """Compute the updated step size.
