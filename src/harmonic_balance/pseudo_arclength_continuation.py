@@ -28,7 +28,7 @@ def compute_nlfr_curve(
     K: ndarray,
     tol: float = 1e-6,
     max_iter: int = 100,
-    optimal_num_steps: int = 10,
+    optimal_num_steps: int = 3,
     min_step_size: float = 1e-3,
     max_step_size: float = 5e-1,
 ) -> tuple[ndarray[complex], ndarray[float], ndarray[bool], ndarray[int]]:
@@ -126,6 +126,7 @@ def compute_nlfr_curve(
 
     # Estimate the first tangent vector with a secant vector.
     V_i0 = ys[1] - ys[0]
+    V_i0 /= np.linalg.norm(V_i0)
 
     for i in range(2, num_points):
         db_nl_dz = solve.get_db_nl_dz(
@@ -227,8 +228,7 @@ def compute_step_multiplier(
     multiplier
         Factor by which to multiply the step size, i.e., s_new = s * update
     """
-    scale = optimal_num_steps / (num_steps + 1)
-    return scale * s
+    return optimal_num_steps / (num_steps + 1)
 
 
 def predict_y(
@@ -281,7 +281,7 @@ def compute_tangent(
         Current tangent vector
         shape (n(NH + 1) + 1,)
     """
-    mat = np.block([[dR_dz, dR_d_omega.reshape(-1, 1)], [V_i0]])
+    mat = np.block([[dR_dz, dR_d_omega.reshape(-1, 1)], [V_i0.conj()]])
     rhs = np.zeros_like(V_i0)
     rhs[-1] = 1
     V_i1 = np.linalg.solve(mat, rhs)
@@ -447,7 +447,7 @@ def get_P(
     P
         Dot product V^T (y - y_k0)
     """
-    return V @ (y - y_k0)
+    return V.conj() @ (y - y_k0)
 
 
 def get_rhs(R: sparray | ndarray, P: float) -> sparray | ndarray:
@@ -489,7 +489,7 @@ def _solve_step(
         z, omega, df_nl_d_xdot, NH, n, N, M, C
     )
 
-    jacobian = np.block([[dR_dz, dR_d_omega.reshape(-1, 1)], [V]])
+    jacobian = np.block([[dR_dz, dR_d_omega.reshape(-1, 1)], [V.conj()]])
 
     step = np.linalg.solve(jacobian, -rhs)
     step[-1] = step[-1].real
