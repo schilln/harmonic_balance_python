@@ -185,14 +185,20 @@ def update_step_size(
         New step size
     """
     s_new = s * compute_step_multiplier(optimal_num_steps, num_steps)
-    if s_new < min_step_size or max_step_size < s_new:
-        return s
+    if abs(s_new) < min_step_size:
+        return np.sign(s_new) * min_step_size
+    elif max_step_size < abs(s_new):
+        return np.sign(s_new) * max_step_size
     else:
         return s_new
 
 
 def compute_step_multiplier(
-    optimal_num_steps: int, num_steps: int, s: float, V1: ndarray, V0: ndarray
+    optimal_num_steps: int,
+    num_steps: int,
+    s: float,
+    V_i0: ndarray,
+    V_i1: ndarray,
 ) -> float:
     """Compute the factor by which to multiply the step size.
 
@@ -204,8 +210,8 @@ def compute_step_multiplier(
         Number of correction iterations used
     s
         Previous step size
-    V1, V0
-        Current and previous tangent vectors
+    V_i0, V_i1
+        Previous and current tangent vectors
         shape (n * (NH + 1) + 1,)
 
     Returns
@@ -214,32 +220,67 @@ def compute_step_multiplier(
         Factor by which to multiply the step size, i.e., s_new = s * update
     """
     scale = optimal_num_steps / num_steps
-    sign = np.sign(s * V1 @ V0)
+    sign = np.sign(s * V_i1 @ V_i0)
     return scale * sign * s
 
 
 def predict_y(
-    y_i1: sparray | ndarray, y_i0: sparray | ndarray, s: float
+    y_i0: sparray | ndarray,
+    V_i1: ndarray,
+    s: float,
 ) -> sparray | ndarray:
-    """Given the previous two solutions (i = 0, 1), predict the next solution
-    (i = 2).
+    """Predict the next solution.
 
     Parameters
     ----------
-    y_i1, y_i0
-        Previous solutions y_i = [z_i, omega_i], i = 0, 1
+    y_i0
+        Previous solution y_i = [z_i, omega_i]
         shape (n(NH + 1) + 1,)
+    V_i1
+        Current tangent vector
+    s
+        Current step size
 
     Returns
     -------
-    y_i2_k0
-        Predicted solution y_ik, i = 2, k = 0
+    y_i1_k0
+        Predicted solution
+    """
+    y_i1_k0 = y_i0 + s * V_i1
+    return y_i1_k0
+
+
+def compute_tangent(
+    dR_dz: sparray | ndarray,
+    dR_d_omega: sparray | ndarray,
+    V_i0: ndarray,
+) -> sparray | ndarray:
+    """Compute the current tangent vector.
+
+    Parameters
+    ----------
+    dR_dz
+        Derivative of residual R with respect to solution z
+        See `solve.get_dR_dz`
+    dR_d_omega
+        Derivative of residual R with respect to omega
+        See `continuation.get_dR_d_omega`
+    V_i0
+        Previous tangent vector
+
+    Returns
+    -------
+    V_i1
+        Current tangent vector
         shape (n(NH + 1) + 1,)
     """
-    secant = y_i1 - y_i0
-    direction = secant / np.linalg.norm(secant)
-    y_i2_k0 = y_i1 + s * direction
-    return y_i2_k0
+    mat = np.block([[dR_dz, dR_d_omega], [V_i0]])
+    rhs = np.zeros_like(V_i0)
+    rhs[-1] = 1
+    V_i1 = np.linalg.solve(mat, rhs)
+    V_i1 /= np.linalg.norm(V_i1)
+
+    return V_i1
 
 
 def correct_y(
