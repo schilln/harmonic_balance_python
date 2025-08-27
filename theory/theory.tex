@@ -15,6 +15,7 @@
 \section{Introduction}
 
 We implement the method of harmonic balance using exponential periodic basis functions instead of trigonometric.
+Let $(\cdot)^*$ denote the conjugate transpose of a vector or matrix.
 
 Assume the state $\x(t): \R \rightarrow \R^n$ is governed by
 \begin{align}
@@ -1078,5 +1079,11 @@ Observe,
     + \omega \frac d{d \dot \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \wh \Gamma (\wh \nabla \otimes I_n)
   \bigg].
 \end{align*}
+
+\subsection{Continuation}
+
+I believe continuation should be basically the same as in \ref{sec:arclength_continuation} and \ref{sec:pseudo_arclength_continuation}.
+However, I haven't gotten arclength continuation to continue past a fold bifurcation in the NLFR curve, and my implementation of pseudo-arclength continuation is yielding mixed and irregular results.
+Though I haven't implemented either method without the real assumption, so I don't have a successful baseline to compare against in either case.
 
 \end{document}
