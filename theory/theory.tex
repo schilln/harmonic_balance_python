@@ -625,7 +625,7 @@ and then finding roots using, for example, Newton--Raphson:
     \Delta \omega
   \end{bmatrix}
   = \Rb\aug(\y_{i+1}^k, s) \\
-  \y_{i+1}^{k+1} = \y_{i+1} +
+  \y_{i+1}^{k+1} = \y_{i+1}^k +
   \begin{bmatrix}
     \Delta \z \\
     \Delta \omega
@@ -634,7 +634,7 @@ and then finding roots using, for example, Newton--Raphson:
 Note
 \begin{align*}
   P_\z(\y_{i+1}^k, s) &= 2 (\z_{i+1}^k - \z_i)\trp \\
-  P_\z(\y_{i+1}^k, s) &= 2 (\omega_{i+1}^k - \omega_i) \\
+  P_\omega(\y_{i+1}^k, s) &= 2 (\omega_{i+1}^k - \omega_i) \\
   \Rb_\omega(\y_{i+1}^k)
   &= \paren*{
     2 \omega \nabla^2 \otimes M
@@ -644,7 +644,7 @@ Note
 It is common to adjust the step size $s$ using the number of solver iterations.
 One method is
 \begin{equation}
-  s_{i+1} = s 2^\frac{k_\text{optimal} - k_i}{k_\text{optimal}}
+  s_{i+1} = s_i 2^\frac{k_\text{optimal} - k_i}{k_\text{optimal}}
 \end{equation}
 where $k_\text{optimal}$ is a hyperparameter chosen according to the solver and the problem.
 
