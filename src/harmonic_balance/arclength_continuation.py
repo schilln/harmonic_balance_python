@@ -401,7 +401,7 @@ def get_dP_dz(
     z_i1: sparray | ndarray,
     z_i0: sparray | ndarray,
 ) -> sparray | ndarray:
-    return 2 * (z_i1 - z_i0)
+    return (z_i1 - z_i0).conj()
 
 
 def get_dP_d_omega(
