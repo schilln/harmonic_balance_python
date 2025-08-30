@@ -27,10 +27,11 @@ def compute_nlfr_curve(
     C: ndarray,
     K: ndarray,
     tol: float = 1e-6,
-    max_iter: int = 100,
+    max_iter: int = 50,
     optimal_num_steps: int = 3,
     min_step_size: float = 5e-4,
     max_step_size: float = 5e-1,
+    initial_max_iter: int = 100,
 ) -> tuple[ndarray[complex], ndarray[float], ndarray[bool], ndarray[int]]:
     """Compute solutions along nonlinear frequency response (NLFR) curve for
     increasing values of fundamental forcing frequency omega.
@@ -111,7 +112,7 @@ def compute_nlfr_curve(
             n,
             N,
             tol,
-            max_iter=max_iter,
+            max_iter=initial_max_iter,
         )
         ys[i] = np.concat((z, [omega]))
         b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
