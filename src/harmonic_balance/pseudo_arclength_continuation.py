@@ -80,6 +80,11 @@ def compute_nlfr_curve(
         Optimal number of correction iterations
     min_step_size, max_step_size
         Minimum and maximum step size `s`
+    pred_tol
+        Relative residual tolerance for predicted solutions; if residual is too
+        high, step size is halved (down to `min_step_size`)
+    initial_max_iter
+        Maximum number of allowed iterations for solutions prior to continuation
 
     Returns
     -------
