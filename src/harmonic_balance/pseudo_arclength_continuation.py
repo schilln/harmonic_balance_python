@@ -130,6 +130,8 @@ def compute_nlfr_curve(
     V_i0 /= np.linalg.norm(V_i0)
 
     for i in range(2, num_points):
+        omega, z = ys[i - 1, -1].real, ys[i - 1, :-1]
+        A = freq.get_A(omega, NH, M, C, K)
         db_nl_dz = solve.get_db_nl_dz(
             omega, z, df_nl_dx, df_nl_d_xdot, NH, n, N
         )
