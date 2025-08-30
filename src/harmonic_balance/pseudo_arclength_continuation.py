@@ -33,6 +33,7 @@ def compute_nlfr_curve(
     max_step_size: float = 5e-1,
     pred_tol: float = 1e-1,
     initial_max_iter: int = 100,
+    initial_values: tuple[ndarray, ndarray] | None = None,
 ) -> tuple[ndarray[complex], ndarray[float], ndarray[bool], ndarray[int]]:
     """Compute solutions along nonlinear frequency response (NLFR) curve for
     increasing values of fundamental forcing frequency omega.
@@ -85,6 +86,8 @@ def compute_nlfr_curve(
         high, step size is halved (down to `min_step_size`)
     initial_max_iter
         Maximum number of allowed iterations for solutions prior to continuation
+    initial_values
+        Two solutions to start curve; if not None, `omega_i0` is ignored
 
     Returns
     -------
@@ -103,33 +106,46 @@ def compute_nlfr_curve(
     convergeds = np.full(num_points, False)
     iters = np.full(num_points, -1)
 
-    omega = omega_i0
-    for i in range(2):
-        A = freq.get_A(omega, NH, M, C, K)
-        z, rhs, convergeds[i], iters[i] = solve.solve_nonlinear(
-            omega,
-            freq.solve_linear_system(A, b_ext),
-            A,
-            b_ext,
-            f_nl,
-            df_nl_dx,
-            df_nl_d_xdot,
-            NH,
-            n,
-            N,
-            tol,
-            max_iter=initial_max_iter,
-        )
-        ys[i] = np.concat((z, [omega]))
-        b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
-        rel_errors[i] = get_rel_error(rhs, b_nl + b_ext)
-        if not convergeds[i]:
-            print(f"{i: >3} didn't converge")
+    if initial_values is None:
+        omega = omega_i0
+        for i in range(2):
+            A = freq.get_A(omega, NH, M, C, K)
+            z, rhs, convergeds[i], iters[i] = solve.solve_nonlinear(
+                omega,
+                freq.solve_linear_system(A, b_ext),
+                A,
+                b_ext,
+                f_nl,
+                df_nl_dx,
+                df_nl_d_xdot,
+                NH,
+                n,
+                N,
+                tol,
+                max_iter=initial_max_iter,
+            )
+            ys[i] = np.concat((z, [omega]))
+            b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
+            rel_errors[i] = get_rel_error(rhs, b_nl + b_ext)
+            if not convergeds[i]:
+                print(f"{i: >3} didn't converge")
 
-        s = update_step_size(
-            optimal_num_steps, iters[i], s, min_step_size, max_step_size
-        )
-        omega += s
+            s = update_step_size(
+                optimal_num_steps, iters[i], s, min_step_size, max_step_size
+            )
+            omega += s
+    else:
+        assert len(initial_values) == 2
+        for i in range(2):
+            ys[i] = initial_values[i]
+            omega, z = ys[i, -1].real, ys[i, :-1]
+            A = freq.get_A(omega, NH, M, C, K)
+            b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
+            R = solve.get_R(z, A, b_nl, b_ext)
+            rel_errors[i] = get_rel_error(R, b_nl + b_ext)
+            convergeds[i] = rel_errors[i] < tol
+            if not convergeds[i]:
+                print(f"{i: >3} didn't converge")
 
     # Estimate the first tangent vector with a secant vector.
     V_i0 = ys[1] - ys[0]
