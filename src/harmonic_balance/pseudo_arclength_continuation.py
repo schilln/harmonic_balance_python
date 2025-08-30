@@ -31,6 +31,7 @@ def compute_nlfr_curve(
     optimal_num_steps: int = 3,
     min_step_size: float = 5e-4,
     max_step_size: float = 5e-1,
+    pred_tol: float = 1e-1,
     initial_max_iter: int = 100,
 ) -> tuple[ndarray[complex], ndarray[float], ndarray[bool], ndarray[int]]:
     """Compute solutions along nonlinear frequency response (NLFR) curve for
@@ -140,7 +141,23 @@ def compute_nlfr_curve(
             z, omega, df_nl_d_xdot, NH, n, N, M, C
         )
         V_i1 = compute_tangent(dR_dz, dR_d_omega, V_i0)
-        y_k0 = predict_y(ys[i - 1], V_i1, s)
+
+        while True:
+            y_k0 = predict_y(ys[i - 1], V_i1, s)
+
+            omega, z = y_k0[-1].real, y_k0[:-1]
+            A = freq.get_A(omega, NH, M, C, K)
+            b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
+            R = solve.get_R(z, A, b_nl, b_ext)
+
+            if (pred_rel_error := get_rel_error(R, y_k0)) < pred_tol:
+                break
+            print(f"{i: >3} rel error (pred): {pred_rel_error:.2e}")
+
+            s /= 2
+            s = np.clip(s, min_step_size, max_step_size)
+            if s == min_step_size or s == max_step_size:
+                break
 
         try:
             ys[i], rhs, convergeds[i], iters[i] = correct_y(
