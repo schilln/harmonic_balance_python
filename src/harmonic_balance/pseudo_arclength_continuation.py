@@ -415,6 +415,7 @@ def correct_y(
             converged = True
             break
 
+    y[-1] = y[-1].real
     return y, rhs, converged, i + 1 if "i" in locals() else 0
 
 
@@ -506,5 +507,4 @@ def _solve_step(
     jacobian = np.block([[dR_dz, dR_d_omega.reshape(-1, 1)], [V.conj()]])
 
     step = np.linalg.solve(jacobian, -rhs)
-    step[-1] = step[-1].real
     return step
