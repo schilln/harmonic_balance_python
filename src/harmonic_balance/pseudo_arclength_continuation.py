@@ -385,12 +385,10 @@ def correct_y(
 
     converged = False
     for i in range(max_iter):
-        A = freq.get_A(omega, NH, M, C, K)
         step = _solve_step(
             y,
             y_k0,
             V,
-            A,
             b_ext,
             f_nl,
             df_nl_dx,
@@ -400,12 +398,14 @@ def correct_y(
             N,
             M,
             C,
+            K,
         )
         y[-1] += step[-1]
         y[:-1] += step[:-1]
 
         omega, z = y[-1].real, y[:-1]
 
+        A = freq.get_A(omega, NH, M, C, K)
         b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
         R = solve.get_R(z, A, b_nl, b_ext)
         P = get_P(y, y_k0, V)
@@ -473,7 +473,6 @@ def _solve_step(
     y: ndarray,
     y_k0: ndarray,
     V: ndarray,
-    A: sparray,
     b_ext: ndarray,
     f_nl: abc.Callable[[ndarray, ndarray, int], ndarray],
     df_nl_dx: abc.Callable[[ndarray, ndarray, int], ndarray],
@@ -483,6 +482,7 @@ def _solve_step(
     N: int,
     M: ndarray,
     C: ndarray,
+    K: ndarray,
 ) -> ndarray:
     """
 
@@ -493,6 +493,7 @@ def _solve_step(
     """
     omega, z = y[-1].real, y[:-1]
 
+    A = freq.get_A(omega, NH, M, C, K)
     b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
     R = solve.get_R(z, A, b_nl, b_ext)
     P = get_P(y, y_k0, V)
