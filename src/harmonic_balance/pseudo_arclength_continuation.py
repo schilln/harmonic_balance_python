@@ -117,7 +117,7 @@ def compute_nlfr_curve(
         b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
         rel_errors[i] = get_rel_error(rhs, b_nl + b_ext)
         if not convergeds[i]:
-            print(f"iteration {i:0>3} didn't converge")
+            print(f"{i: >3} didn't converge")
 
         s = update_step_size(
             optimal_num_steps, iters[i], s, min_step_size, max_step_size
@@ -162,7 +162,7 @@ def compute_nlfr_curve(
 
         rel_errors[i] = get_rel_error(rhs, b_nl + b_ext)
         if not convergeds[i]:
-            print(f"iteration {i:0>3} didn't converge")
+            print(f"{i: >3} didn't converge")
 
         s = update_step_size(
             optimal_num_steps, iters[i], s, min_step_size, max_step_size
