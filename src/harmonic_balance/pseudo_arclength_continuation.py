@@ -201,19 +201,13 @@ def update_step_size(
     s_new
         New step size
     """
-    s_new = s * compute_step_multiplier(optimal_num_steps, num_steps, s)
-    if s_new < min_step_size:
-        return min_step_size
-    elif max_step_size < s_new:
-        return max_step_size
-    else:
-        return s_new
+    s_new = s * compute_step_multiplier(optimal_num_steps, num_steps)
+    return np.clip(s_new, min_step_size, max_step_size)
 
 
 def compute_step_multiplier(
     optimal_num_steps: int,
     num_steps: int,
-    s: float,
 ) -> float:
     """Compute the factor by which to multiply the step size.
 
