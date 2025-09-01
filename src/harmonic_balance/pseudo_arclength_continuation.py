@@ -27,10 +27,13 @@ def compute_nlfr_curve(
     C: ndarray,
     K: ndarray,
     tol: float = 1e-6,
-    max_iter: int = 100,
-    optimal_num_steps: int = 10,
-    min_step_size: float = 1e-3,
+    max_iter: int = 50,
+    optimal_num_steps: int = 3,
+    min_step_size: float = 5e-4,
     max_step_size: float = 5e-1,
+    pred_tol: float = 1e-1,
+    initial_max_iter: int = 100,
+    initial_values: tuple[ndarray, ndarray] | None = None,
 ) -> tuple[ndarray[complex], ndarray[float], ndarray[bool], ndarray[int]]:
     """Compute solutions along nonlinear frequency response (NLFR) curve for
     increasing values of fundamental forcing frequency omega.
@@ -78,6 +81,13 @@ def compute_nlfr_curve(
         Optimal number of correction iterations
     min_step_size, max_step_size
         Minimum and maximum step size `s`
+    pred_tol
+        Relative residual tolerance for predicted solutions; if residual is too
+        high, step size is halved (down to `min_step_size`)
+    initial_max_iter
+        Maximum number of allowed iterations for solutions prior to continuation
+    initial_values
+        Two solutions to start curve; if not None, `omega_i0` is ignored
 
     Returns
     -------
@@ -96,40 +106,14 @@ def compute_nlfr_curve(
     convergeds = np.full(num_points, False)
     iters = np.full(num_points, -1)
 
-    omega = omega_i0
-    for i in range(2):
-        A = freq.get_A(omega, NH, M, C, K)
-        z, rhs, convergeds[i], iters[i] = solve.solve_nonlinear(
-            omega,
-            freq.solve_linear_system(A, b_ext),
-            A,
-            b_ext,
-            f_nl,
-            df_nl_dx,
-            df_nl_d_xdot,
-            NH,
-            n,
-            N,
-            tol,
-            max_iter=max_iter,
-        )
-        ys[i] = np.concat((z, [omega]))
-        rel_errors[i] = get_rel_error(rhs, ys[i])
-        if not convergeds[i]:
-            print(f"{i: >3} didn't converge")
-
-        s = update_step_size(
-            optimal_num_steps, iters[i], s, min_step_size, max_step_size
-        )
-        omega += s
-
-    for i in range(2, num_points):
-        y_k0 = predict_y(ys[i - 1], ys[i - 2], s)
-
-        try:
-            ys[i], rhs, convergeds[i], iters[i] = correct_y(
-                y_k0,
-                ys[i - 1],
+    if initial_values is None:
+        omega = omega_i0
+        for i in range(2):
+            A = freq.get_A(omega, NH, M, C, K)
+            z, rhs, convergeds[i], iters[i] = solve.solve_nonlinear(
+                omega,
+                freq.solve_linear_system(A, b_ext),
+                A,
                 b_ext,
                 f_nl,
                 df_nl_dx,
@@ -137,7 +121,76 @@ def compute_nlfr_curve(
                 NH,
                 n,
                 N,
-                s,
+                tol,
+                max_iter=initial_max_iter,
+            )
+            ys[i] = np.concat((z, [omega]))
+            b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
+            rel_errors[i] = get_rel_error(rhs, b_nl + b_ext)
+            if not convergeds[i]:
+                print(f"{i: >3} didn't converge")
+
+            s = update_step_size(
+                optimal_num_steps, iters[i], s, min_step_size, max_step_size
+            )
+            omega += s
+    else:
+        assert len(initial_values) == 2
+        for i in range(2):
+            ys[i] = initial_values[i]
+            omega, z = ys[i, -1].real, ys[i, :-1]
+            A = freq.get_A(omega, NH, M, C, K)
+            b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
+            R = solve.get_R(z, A, b_nl, b_ext)
+            rel_errors[i] = get_rel_error(R, b_nl + b_ext)
+            convergeds[i] = rel_errors[i] < tol
+            if not convergeds[i]:
+                print(f"{i: >3} didn't converge")
+
+    # Estimate the first tangent vector with a secant vector.
+    V_i0 = ys[1] - ys[0]
+    V_i0 /= np.linalg.norm(V_i0)
+
+    for i in range(2, num_points):
+        omega, z = ys[i - 1, -1].real, ys[i - 1, :-1]
+        A = freq.get_A(omega, NH, M, C, K)
+        db_nl_dz = solve.get_db_nl_dz(
+            omega, z, df_nl_dx, df_nl_d_xdot, NH, n, N
+        )
+        dR_dz = solve.get_dR_dz(A, db_nl_dz)
+        dR_d_omega = continuation.get_dR_d_omega(
+            z, omega, df_nl_d_xdot, NH, n, N, M, C
+        )
+        V_i1 = compute_tangent(dR_dz, dR_d_omega, V_i0)
+
+        while True:
+            y_k0 = predict_y(ys[i - 1], V_i1, s)
+
+            omega, z = y_k0[-1].real, y_k0[:-1]
+            A = freq.get_A(omega, NH, M, C, K)
+            b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
+            R = solve.get_R(z, A, b_nl, b_ext)
+
+            if (pred_rel_error := get_rel_error(R, y_k0)) < pred_tol:
+                break
+            print(f"{i: >3} rel error (pred): {pred_rel_error:.2e}")
+
+            s /= 2
+            s = np.clip(s, min_step_size, max_step_size)
+            if s == min_step_size or s == max_step_size:
+                break
+
+        try:
+            ys[i], rhs, convergeds[i], iters[i] = correct_y(
+                y_k0,
+                V_i1,
+                b_ext,
+                f_nl,
+                df_nl_dx,
+                df_nl_d_xdot,
+                NH,
+                n,
+                N,
                 M,
                 C,
                 K,
@@ -148,13 +201,15 @@ def compute_nlfr_curve(
             print(traceback.format_exc())
             return ys, rel_errors, convergeds, iters
 
-        rel_errors[i] = get_rel_error(rhs, ys[i])
+        rel_errors[i] = get_rel_error(rhs, b_nl + b_ext)
         if not convergeds[i]:
             print(f"{i: >3} didn't converge")
 
         s = update_step_size(
             optimal_num_steps, iters[i], s, min_step_size, max_step_size
         )
+
+        V_i0 = V_i1.copy()
 
     return ys, rel_errors, convergeds, iters
 
@@ -163,9 +218,9 @@ def update_step_size(
     optimal_num_steps: int,
     num_steps: int,
     s: float,
-    min_step_size: float = 1e-3,
+    min_step_size: float = 5e-4,
     max_step_size: float = 5e-1,
-) -> float:
+):
     """Compute the updated step size.
 
     Parameters
@@ -185,13 +240,13 @@ def update_step_size(
         New step size
     """
     s_new = s * compute_step_multiplier(optimal_num_steps, num_steps)
-    if s_new < min_step_size or max_step_size < s_new:
-        return s
-    else:
-        return s_new
+    return np.clip(s_new, min_step_size, max_step_size)
 
 
-def compute_step_multiplier(optimal_num_steps: int, num_steps: int) -> float:
+def compute_step_multiplier(
+    optimal_num_steps: int,
+    num_steps: int,
+) -> float:
     """Compute the factor by which to multiply the step size.
 
     Parameters
@@ -200,44 +255,79 @@ def compute_step_multiplier(optimal_num_steps: int, num_steps: int) -> float:
         Optimal number of correction iterations
     num_steps
         Number of correction iterations used
+    s
+        Previous step size
 
     Returns
     -------
     multiplier
         Factor by which to multiply the step size, i.e., s_new = s * update
     """
-    return 2 ** ((optimal_num_steps - num_steps) / optimal_num_steps)
+    return optimal_num_steps / (num_steps + 1)
 
 
 def predict_y(
-    y_i1: sparray | ndarray, y_i0: sparray | ndarray, s: float
+    y_i0: sparray | ndarray,
+    V_i1: ndarray,
+    s: float,
 ) -> sparray | ndarray:
-    """Given the previous two solutions (i = 0, 1), predict the next solution
-    (i = 2).
+    """Predict the next solution.
 
     Parameters
     ----------
-    y_i1, y_i0
-        Previous solutions y_i = [z_i, omega_i], i = 0, 1
+    y_i0
+        Previous solution y_i = [z_i, omega_i]
         shape (n(NH + 1) + 1,)
+    V_i1
+        Current tangent vector
     s
-        Step size
+        Current step size
 
     Returns
     -------
-    y_i2_k0
-        Predicted solution y_ik, i = 2, k = 0
+    y_i1_k0
+        Predicted solution
+    """
+    y_i1_k0 = y_i0 + s * V_i1
+    return y_i1_k0
+
+
+def compute_tangent(
+    dR_dz: sparray | ndarray,
+    dR_d_omega: sparray | ndarray,
+    V_i0: ndarray,
+) -> sparray | ndarray:
+    """Compute the current tangent vector.
+
+    Parameters
+    ----------
+    dR_dz
+        Derivative of residual R with respect to solution z
+        See `solve.get_dR_dz`
+    dR_d_omega
+        Derivative of residual R with respect to omega
+        See `continuation.get_dR_d_omega`
+    V_i0
+        Previous tangent vector
+
+    Returns
+    -------
+    V_i1
+        Current tangent vector
         shape (n(NH + 1) + 1,)
     """
-    secant = y_i1 - y_i0
-    direction = secant / np.linalg.norm(secant)
-    y_i2_k0 = y_i1 + s * direction
-    return y_i2_k0
+    mat = np.block([[dR_dz, dR_d_omega.reshape(-1, 1)], [V_i0.conj()]])
+    rhs = np.zeros_like(V_i0)
+    rhs[-1] = 1
+    V_i1 = np.linalg.solve(mat, rhs)
+    V_i1 /= np.linalg.norm(V_i1)
+
+    return V_i1
 
 
 def correct_y(
-    y_i1_k0: sparray | ndarray,
-    y_i0: sparray | ndarray,
+    y_k0: sparray | ndarray,
+    V: sparray | ndarray,
     b_ext: ndarray,
     f_nl: abc.Callable[[ndarray, ndarray, int], ndarray],
     df_nl_dx: abc.Callable[[ndarray, ndarray, int], ndarray],
@@ -245,7 +335,6 @@ def correct_y(
     NH: int,
     n: int,
     N: int,
-    s: float,
     M: ndarray,
     C: ndarray,
     K: ndarray,
@@ -257,10 +346,10 @@ def correct_y(
 
     Parameters
     ----------
-    y_i1_k0
-        Predicted solution y_ik, i = 1, k = 0
-    y_i0
-        Previous solution along nonlinear frequency response curve y_i, i = 0.
+    y_k0
+        Predicted solution
+    V
+        Current tangent vector
     b_ext
         Exponential Fourier coefficients of external force (see `get_b_ext`)
         shape (n * (NH + 1),)
@@ -279,8 +368,6 @@ def correct_y(
         Number of degrees of freedom
     N
         Number of points to sample in time domain
-    s
-        Goal distance between y_i1 and y_i0
     M
         Mass matrix
         shape (n, n)
@@ -306,24 +393,23 @@ def correct_y(
     i
         Number of iterations
     """
-    y = y_i1_k0.copy()
+    y = y_k0.copy()
 
     omega, z = y[-1].real, y[:-1]
     A = freq.get_A(omega, NH, M, C, K)
     b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
     R = solve.get_R(z, A, b_nl, b_ext)
-    P = get_P(y, y_i0, s)
-    rhs = get_rhs(R, P)
-    if get_rel_error(rhs, y) < tol:
-        return y, rhs, True, 0
+    # At the first iteration, the dot product computed by `get_P` is zero since
+    # the difference in the dot product is zero.
+    if get_rel_error(R, b_nl + b_ext) < tol:
+        return y, R, True, 0
 
     converged = False
     for i in range(max_iter):
-        A = freq.get_A(omega, NH, M, C, K)
         step = _solve_step(
             y,
-            y_i0,
-            A,
+            y_k0,
+            V,
             b_ext,
             f_nl,
             df_nl_dx,
@@ -331,84 +417,73 @@ def correct_y(
             NH,
             n,
             N,
-            s,
             M,
             C,
+            K,
         )
         y[-1] += step[-1]
         y[:-1] += step[:-1]
 
         omega, z = y[-1].real, y[:-1]
 
+        A = freq.get_A(omega, NH, M, C, K)
         b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
         R = solve.get_R(z, A, b_nl, b_ext)
-        P = get_P(y, y_i0, s)
+        P = get_P(y, y_k0, V)
         rhs = get_rhs(R, P)
 
-        if get_rel_error(rhs, y) < tol:
+        if get_rel_error(rhs, b_nl + b_ext) < tol:
             converged = True
             break
 
+    y[-1] = y[-1].real
     return y, rhs, converged, i + 1 if "i" in locals() else 0
 
 
-def get_rel_error(rhs: ndarray, y: ndarray) -> float:
-    """Compute the relative error |rhs| / |y|.
+def get_rel_error(rhs: ndarray, w: ndarray) -> float:
+    """Compute the relative error |rhs| / |w|.
 
     Parameters
     ----------
     rhs
         Residual rhs = [R, P]
-    y
-        Solution
+    w
+        Vector by which to normalize (e.g., solution y or force b_nl + b_ext)
 
     Returns
     -------
     rel_error
-        Relative error |rhs| / |y|
+        Relative error |rhs| / |w|
     """
-    return np.linalg.norm(rhs) / np.linalg.norm(y)
+    return np.linalg.norm(rhs) / np.linalg.norm(w)
 
 
 def get_P(
-    y_i1: sparray | ndarray,
-    y_i0: sparray | ndarray,
-    s: float,
+    y: sparray | ndarray,
+    y_k0: sparray | ndarray,
+    V: sparray | ndarray,
 ) -> float:
-    """Compute deviation of distance between y_i1 and y_i0 from the step size s.
+    """Compute dot product of tangent vector with difference between current and
+    predicted solutions.
 
     Parameters
     ----------
-    y_i1, y_i0
-        Solutions y_i = [z_i, omega_i], i = 0, 1
+    y
+        Current estimated solution y = [z, omega]
         shape (n(NH + 1) + 1,)
-    s
-        Goal distance between y_i1 and y_i0
+    y_k0
+        Predicted solution y
+        shape (n(NH + 1) + 1,)
+    V
+        Current tangent vector
+        shape (n(NH + 1) + 1,)
 
     Returns
     -------
     P
-        Residual norm(y_i1 - y_i0)^2 - s^2
+        Dot product V^T (y - y_k0)
     """
-    if isinstance(y_i1, ndarray) or isinstance(y_i0, ndarray):
-        norm = np.linalg.norm
-    else:
-        norm = sparse.linalg.norm
-    return norm(y_i1 - y_i0) ** 2 - s**2
-
-
-def get_dP_dz(
-    z_i1: sparray | ndarray,
-    z_i0: sparray | ndarray,
-) -> sparray | ndarray:
-    return (z_i1 - z_i0).conj()
-
-
-def get_dP_d_omega(
-    omega_i1: float,
-    omega_i0: float,
-) -> float:
-    return 2 * (omega_i1 - omega_i0)
+    return V.conj() @ (y - y_k0)
 
 
 def get_rhs(R: sparray | ndarray, P: float) -> sparray | ndarray:
@@ -416,9 +491,9 @@ def get_rhs(R: sparray | ndarray, P: float) -> sparray | ndarray:
 
 
 def _solve_step(
-    y_i1: ndarray,
-    y_i0: ndarray,
-    A: sparray,
+    y: ndarray,
+    y_k0: ndarray,
+    V: ndarray,
     b_ext: ndarray,
     f_nl: abc.Callable[[ndarray, ndarray, int], ndarray],
     df_nl_dx: abc.Callable[[ndarray, ndarray, int], ndarray],
@@ -426,9 +501,9 @@ def _solve_step(
     NH: int,
     n: int,
     N: int,
-    s: float,
     M: ndarray,
     C: ndarray,
+    K: ndarray,
 ) -> ndarray:
     """
 
@@ -437,32 +512,21 @@ def _solve_step(
     step
         The step to add to y_i1 = [z_i1, omega_i1] to get the (k+1)th correction
     """
-    omega_i1, z_i1 = y_i1[-1].real, y_i1[:-1]
-    omega_i0, z_i0 = y_i0[-1].real, y_i0[:-1]
+    omega, z = y[-1].real, y[:-1]
 
-    b_nl = solve.get_b_nl(z_i1, omega_i1, f_nl, NH, n, N)
-    R = solve.get_R(z_i1, A, b_nl, b_ext)
-    P = get_P(y_i1, y_i0, s)
+    A = freq.get_A(omega, NH, M, C, K)
+    b_nl = solve.get_b_nl(z, omega, f_nl, NH, n, N)
+    R = solve.get_R(z, A, b_nl, b_ext)
+    P = get_P(y, y_k0, V)
     rhs = get_rhs(R, P)
 
-    db_nl_dz = solve.get_db_nl_dz(
-        omega_i1, z_i1, df_nl_dx, df_nl_d_xdot, NH, n, N
-    )
+    db_nl_dz = solve.get_db_nl_dz(omega, z, df_nl_dx, df_nl_d_xdot, NH, n, N)
     dR_dz = solve.get_dR_dz(A, db_nl_dz)
     dR_d_omega = continuation.get_dR_d_omega(
-        z_i1, omega_i1, df_nl_d_xdot, NH, n, N, M, C
+        z, omega, df_nl_d_xdot, NH, n, N, M, C
     )
 
-    dP_dz = get_dP_dz(z_i1, z_i0)
-    dP_d_omega = get_dP_d_omega(omega_i1, omega_i0)
-
-    jacobian = np.block(
-        [
-            [dR_dz, dR_d_omega.reshape(-1, 1)],
-            [dP_dz.reshape(1, -1), dP_d_omega.reshape(-1, 1)],
-        ]
-    )
+    jacobian = np.block([[dR_dz, dR_d_omega.reshape(-1, 1)], [V.conj()]])
 
     step = np.linalg.solve(jacobian, -rhs)
-    step[-1] = step[-1].real
     return step

@@ -1,6 +1,7 @@
 arclength
 dofs
 Galerkin
+hypersphere
 nabla
 nlfr
 Raphson

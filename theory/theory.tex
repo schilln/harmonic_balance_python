@@ -5,14 +5,17 @@
 
 \usepackage[margin=1in]{geometry}
 \usepackage{hyperref}
+\usepackage{cleveref}
 
 \newcommand{\wh}{\widehat}
+\newcommand{\aug}{^\text{aug}}
 
 \begin{document}
 
 \section{Introduction}
 
 We implement the method of harmonic balance using exponential periodic basis functions instead of trigonometric.
+Let $(\cdot)^*$ denote the conjugate transpose of a vector or matrix.
 
 Assume the state $\x(t): \R \rightarrow \R^n$ is governed by
 \begin{align}
@@ -580,6 +583,153 @@ Then using \eqref{eq:x_s}, \eqref{eq:xp_s}, and \eqref{eq:b_nl-aft},
   \bigg].
 \end{align*}
 
+\section{Continuation}
+
+It is useful to compute harmonic balance solutions as a chosen parameter varies.
+For example, varying the fundamental forcing frequency and plotting the amplitude of the response yields a \textit{nonlinear frequency response} (NLFR) \textit{curve}.
+Two techniques which this code (attempts) to implement are \textit{arclength continuation} (in section \ref{sec:arclength_continuation}) and \textit{pseudo-arclength continuation} (in \ref{sec:pseudo_arclength_continuation}).
+
+\subsection{Arclength continuation}
+\label{sec:arclength_continuation}
+
+Define
+\begin{equation}
+  P(\z_{i+1}^k, \omega_{i+1}^k, s) \coloneq \norm{\z_{i+1}^k - \z_i}^2 + (\omega_{i+1}^k - \omega_i)^2 - s^2
+\end{equation}
+where the subscript denotes the $i$th solution along the NLFR curve and the superscript denotes the $k$th iteration of Newton--Raphson or another iterative solver.
+Finding roots $\y_{i+1} =
+\begin{bmatrix}
+  \z_{i+1}\trp & \omega_{i+1}
+\end{bmatrix}\trp$
+amounts to constraining $\y$ to a hypersphere of radius $s$ centered at $\y_i$.
+Solutions are found using a predictor-corrector method.
+Predictions may be obtained using, for example, secant vectors:
+\begin{align}
+  \y_{i+1}^0 = \y_i + s_{i+1} \frac{\y_i - \y_{i-1}}{\norm{\y_i - \y_{i-1}}}.
+\end{align}
+The prediction is corrected by augmenting the residual $R$
+\begin{align}
+  \Rb\aug(\y, s) =
+  \begin{bmatrix}
+    \Rb(\y) \\
+    P(\y, s)
+  \end{bmatrix}
+\end{align}
+and then finding roots using, for example, Newton--Raphson:
+\begin{gather}
+  \begin{bmatrix}
+    \Rb_\z(\y_{i+1}^k) & \Rb_\omega(\y_{i+1}^k) \\
+    P_\z(\y_{i+1}^k, s) & P_\omega(\y_{i+1}^k, s)
+  \end{bmatrix}
+  \begin{bmatrix}
+    \Delta \z \\
+    \Delta \omega
+  \end{bmatrix}
+  = \Rb\aug(\y_{i+1}^k, s) \\
+  \y_{i+1}^{k+1} = \y_{i+1}^k +
+  \begin{bmatrix}
+    \Delta \z \\
+    \Delta \omega
+  \end{bmatrix}.
+\end{gather}
+Note
+\begin{align*}
+  P_\z(\y_{i+1}^k, s) &= \paren*{\z_{i+1}^k - \z_i}^* \\
+  P_\omega(\y_{i+1}^k, s) &= 2 \paren*{\omega_{i+1}^k - \omega_i} \\
+  \Rb_\omega(\y_{i+1}^k)
+  &= \paren*{
+    2 \omega \nabla^2 \otimes M
+    + \nabla \otimes C
+  } \z_{i+1}^k.
+\end{align*}
+It is common to adjust the step size $s$ using the number of solver iterations.
+One method is
+\begin{equation}
+  s_{i+1} = s_i 2^\frac{k_\text{optimal} - k_i}{k_\text{optimal}}
+\end{equation}
+where $k_\text{optimal}$ is a hyperparameter chosen according to the solver and the problem.
+
+\subsection{Pseudo-arclength continuation}
+\label{sec:pseudo_arclength_continuation}
+
+We'll reuse notation from the previous section, but note that these two methods (arclength continuation and pseudo-arclength continuation) are mutually exclusive and so the notation should be unambiguous upon deciding which method to use.
+
+Define
+\begin{equation}
+  P(\z_{i+1}^k, \omega_{i+1}^k) \coloneq \vb_i^* \paren*{\y_{i+1}^k - \y_{i+1}^0}
+\end{equation}
+where the subscript denotes the $i$th solution along the NLFR curve;
+the superscript denotes the $k$th iteration of Newton--Raphson or another iterative solver;
+and $\vb_i$ denotes the unit tangent vector to the curve at the $i$th solution.
+Finding roots $\y_{i+1} =
+\begin{bmatrix}
+  \z_{i+1}\trp & \omega_{i+1}
+\end{bmatrix}\trp$
+amounts to constraining $\y$ to a hyperplane perpendicular to the tangent vector $\vb_i$ emanating from $\y_i$.
+The tangent vector $\vb =
+\begin{bmatrix}
+  \vb_\z\trp & v_\omega
+\end{bmatrix}\trp$
+is computed as
+\begin{align}
+  \begin{bmatrix}
+    \Rb_\z(\y_i) & \Rb_\omega(\y_i) \\
+    \vb_{i-1,\; \z}^* & v_{i-1,\; \omega}
+  \end{bmatrix}
+  \vb_i =
+  \begin{bmatrix} \mathbf 0 \\ 1
+  \end{bmatrix}.
+\end{align}
+The first (vector) equation computes the tangent vector and the second (scalar) equation ensures $\vb_i$ points in the same direction as $\vb_{i-1}$ by having a positive inner product.
+The tangent vector is subsequently normalized to have unit length.
+
+Solutions are found using a predictor-corrector method.
+Predictions may be obtained using the tangent vector:
+\begin{align}
+  \y_{i+1}^0 = \y_i + s_{i+1} \vb_i.
+\end{align}
+The prediction is corrected by augmenting the residual $R$
+\begin{align}
+  \Rb\aug(\y) =
+  \begin{bmatrix}
+    \Rb(\y) \\
+    P(\y)
+  \end{bmatrix}
+\end{align}
+and then finding roots using, for example, Newton--Raphson:
+\begin{gather}
+  \begin{bmatrix}
+    \Rb_\z(\y_{i+1}^k) & \Rb_\omega(\y_{i+1}^k) \\
+    P_\z(\y_{i+1}^k, s) & P_\omega(\y_{i+1}^k, s)
+  \end{bmatrix}
+  \begin{bmatrix}
+    \Delta \z \\
+    \Delta \omega
+  \end{bmatrix}
+  = \Rb\aug(\y_{i+1}^k, s) \\
+  \y_{i+1}^{k+1} = \y_{i+1}^k +
+  \begin{bmatrix}
+    \Delta \z \\
+    \Delta \omega
+  \end{bmatrix}.
+\end{gather}
+Note
+\begin{align*}
+  P_\z(\y_{i+1}^k, s) &= \vb_{i,\; \z}^* \\
+  P_\omega(\y_{i+1}^k, s) &= v_{i,\; \omega} \\
+  \Rb_\omega(\y_{i+1}^k)
+  &= \paren*{
+    2 \omega \nabla^2 \otimes M
+    + \nabla \otimes C
+  } \z_{i+1}^k.
+\end{align*}
+As mentioned in the previous section, it is common to adjust the step size $s$ using the number of solver iterations.
+In addition to the method discussed there, another method is
+\begin{equation}
+  s_{i+1} = s_i \frac{k_\text{optimal}}{k_i}
+\end{equation}
+where $k_\text{optimal}$ is again a hyperparameter.
+
 \section{It's getting real}
 
 Since $\x$ is real, we know $\ab_{-k} = \conj{\ab_k}$ and $\exp\paren{-i k \omega t} = \conj{\exp\paren{i k \omega t}}$, so we can write
@@ -929,5 +1079,11 @@ Observe,
     + \omega \frac d{d \dot \x} \f\ts{nl} \paren{\x_s,\; \dot \x_s} \wh \Gamma (\wh \nabla \otimes I_n)
   \bigg].
 \end{align*}
+
+\subsection{Continuation}
+
+I believe continuation should be basically the same as in \ref{sec:arclength_continuation} and \ref{sec:pseudo_arclength_continuation}.
+However, I haven't gotten arclength continuation to continue past a fold bifurcation in the NLFR curve, and my implementation of pseudo-arclength continuation is yielding mixed and irregular results.
+Though I haven't implemented either method without the real assumption, so I don't have a successful baseline to compare against in either case.
 
 \end{document}
