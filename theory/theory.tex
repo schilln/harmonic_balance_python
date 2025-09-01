@@ -7,6 +7,9 @@
 \usepackage{hyperref}
 \usepackage{cleveref}
 
+\usepackage{biblatex}
+\addbibresource{theory.biblatex}
+
 \newcommand{\wh}{\widehat}
 \newcommand{\aug}{^\text{aug}}
 
@@ -15,6 +18,11 @@
 \section{Introduction}
 
 We implement the method of harmonic balance using exponential periodic basis functions instead of trigonometric.
+The sources
+\cite{detrouxHarmonicBalanceMethod2015, colaitisHarmonicBalanceMethod2021, kuetherLargescaleHarmonicBalance2024}
+develop and implement this method using trigonometric basis functions (i.e., sines and cosines).
+They are used extensively to guide the development presented here.
+
 Let $(\cdot)^*$ denote the conjugate transpose of a vector or matrix.
 
 Assume the state $\x(t): \R \rightarrow \R^n$ is governed by
@@ -1083,7 +1091,9 @@ Observe,
 \subsection{Continuation}
 
 I believe continuation should be basically the same as in \ref{sec:arclength_continuation} and \ref{sec:pseudo_arclength_continuation}.
-However, I haven't gotten arclength continuation to continue past a fold bifurcation in the NLFR curve, and my implementation of pseudo-arclength continuation is yielding mixed and irregular results.
-Though I haven't implemented either method without the real assumption, so I don't have a successful baseline to compare against in either case.
+However, I haven't gotten neither arclength nor pseudo-arclength continuation to continue past a fold bifurcation in the NLFR curve.
+And I haven't implemented either method without the real assumption, so I don't have a successful baseline to compare against in either case.
+
+\printbibliography
 
 \end{document}
